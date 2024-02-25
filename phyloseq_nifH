@@ -1,0 +1,727 @@
+##phyloseq
+
+rm(list = ls())
+###Directory
+setwd("~/Documents/Master Tesis/nifH Analysis")
+
+###Install packages needed to run the pipeline
+if (!requireNamespace("BiocManager", quietly = TRUE))
+install.packages("BiocManager")
+BiocManager::install(version = "3.18")
+BiocManager::install("microbiome")
+install.packages("ggplot2")
+# install.packages("Biostrings")
+BiocManager::install("Biostrings")
+BiocManager::install("phyloseq")
+install.packages("remotes")
+remotes::install_github("vmikk/metagMisc")
+install.packages("dplyr")  #to manipulate dataframes
+install.packages("readxl") #to read excel files into R
+BiocManager::install("DECIPHER", force = TRUE)
+install.packages("RSQLite")
+install.packages("phangorn")
+BiocManager::install("DESeq2")
+install.packages("indicspecies")
+
+
+##Library
+library(microbiome)
+library(ggplot2); packageVersion("ggplot2")
+library(Biostrings); packageVersion("Biostrings")
+library(phyloseq); packageVersion("phyloseq")
+library(dplyr)
+library(phangorn)
+library(dada2)
+library(DECIPHER)
+library(metagMisc)
+library(vegan)
+library(scales)
+library(grid)
+library(reshape2)
+library("ape")
+library(ggtree)
+library(DESeq2)
+library(indicspecies)
+
+
+######Extract files from a previous R workspace######
+#
+#
+#notes: this should be done to extract files that are necessary for the folowing analysis#
+#
+#
+########Construct a phyloseq object########
+#
+#
+#Check, import and edit files necessary to build a phyloseq object
+#
+#OTU table
+data = read.csv("seqtab.nochim.csv", sep = "\t")
+
+myfiles = list.files()=="otu.table_t"
+read.csv("seqtab.nochim2.csv")
+otu.seqtab <- read.csv("otu.table_t", header = TRUE, sep = "\t")
+str(otu.seqtab)
+
+seq = otu.seqtab$X
+otu.seqtab = as.data.frame(sapply(otu.seqtab[,-1], as.numeric))
+otu.seqtab = data.frame(seq, otu.seqtab)
+class(otu.seqtab)
+#define the row names from the otu column
+otu.seqtab <- otu.seqtab %>%
+tibble::column_to_rownames("seq")  
+#Transform into matrixes otu tables (sample table can be left as data frame)
+otu.seqtab = as.matrix(otu.seqtab)
+class(otu.seqtab)
+View(otu.seqtab)
+
+
+###Taxa table
+list.files()=="taxa.csv"
+read.csv("taxa.csv")
+taxa <- read.csv("taxa.csv", header = TRUE, sep = ",")
+class(taxa)
+str(taxa)
+#define the row names from the otu column
+taxa <- taxa %>%
+  tibble::column_to_rownames("X")
+#Transform into matrix table (sample table can be left as data frame)
+taxa = as.matrix(taxa)
+class(taxa)
+View(taxa)
+
+###Sample metadata
+list.files()=="Sample_list.xlsx"
+read.csv("Sample_list.xlsx")
+metadata <- read.csv("Sample_list.xlsx", header = TRUE, sep = ",")
+metadata <- read.csv("Sample_list.xlsx", header = TRUE, sep ="\t")
+str(metadata)
+
+
+
+
+
+#Changing to factors
+Sample_list_nifH$Fiel_ID = as.factor(Sample_list_nifH$Field_ID)
+Sample_list_nifH$Season = as.factor(Sample_list_nifH$Season)
+Sample_list_nifH$Family = as.factor(Sample_list_nifH$Family)
+Sample_list_nifH$Specie = as.factor(Sample_list_nifH$Specie)
+Sample_list_nifH$Date = as.factor(Sample_list_nifH$Date)
+Sample_list_nifH$Country = as.factor(Sample_list_nifH$Country)
+Sample_list_nifH$Province = as.factor(Sample_list_nifH$Province)
+Sample_list_nifH$Site = as.factor(Sample_list_nifH$Site)
+Sample_list_nifH$Latitude = as.factor(Sample_list_nifH$Latitude)
+Sample_list_nifH$Longitude = as.factor(Sample_list_nifH$Longitude)
+Sample_list_nifH$Altitude_m.a.s.l = as.factor(Sample_list_nifH$Altitude_m.a.s.l)
+Sample_list_nifH$`Plant height_m` = as.factor(Sample_list_nifH$`Plant height_m`)
+Sample_list_nifH$`Size_No of leaf` = as.factor(Sample_list_nifH$`Size_No of leaf`)
+Sample_list_nifH$Sex = as.factor(Sample_list_nifH$Sex)
+Sample_list_nifH$`Cone production` = as.factor(Sample_list_nifH$`Cone production`)
+Sample_list_nifH$`Leaf area_INCH` = as.factor(Sample_list_nifH$`Leaf area_INCH`)
+Sample_list_nifH$`Light %_Canopy Cover Index` = as.factor(Sample_list_nifH$`Light %_Canopy Cover Index`)
+Sample_list_nifH$RH = as.factor(Sample_list_nifH$RH)
+Sample_list_nifH$`Environmental temperature_°C` = as.factor(Sample_list_nifH$`Environmental temperature_°C`)
+Sample_list_nifH$`Leaf temperature_°C` = as.factor(Sample_list_nifH$`Leaf temperature_°C`)
+Sample_list_nifH$Country = as.factor(Sample_list_nifH$Country)
+Sample_list_nifH$`Measurement time` = as.factor(Sample_list_nifH$`Measurement time`)
+Sample_list_nifH$`DNA quantity_ng/ul` = as.factor(Sample_list_nifH$`DNA quantity_ng/ul`)
+Sample_list_nifH$`Type of extraction` = as.factor(Sample_list_nifH$`Type of extraction`)
+Sample_list_nifH$`260/280` = as.factor(Sample_list_nifH$`260/280`)
+Sample_list_nifH$`260/230` = as.factor(Sample_list_nifH$`260/230`)
+Sample_list_nifH$`Extraction made by` = as.factor(Sample_list_nifH$`Extraction made by`)
+Sample_list_nifH$`Elution volumen_uL` = as.factor(Sample_list_nifH$`Elution volumen_uL`)
+Sample_list_nifH$`Date of extraction` = as.factor(Sample_list_nifH$`Date of extraction`)
+Sample_list_nifH$`Conct_ng/ul` = as.numeric(Sample_list_nifH$`Conct_ng/ul`)
+
+
+taxa_nifH = as.matrix(taxa_nifH)
+seqtab.nochim = as.matrix(seqtab.nochim)
+
+
+otu.table_t <- t(seqtab.nochim)
+
+
+
+##Sample table can be left as data frame
+class(Sample_list_nifH)
+str(Sample_list_nifH)
+metadata_nifH <- Sample_list_nifH %>%
+  tibble::column_to_rownames("Field_ID")
+  
+
+vector1 <- rownames(taxa_nifH)
+vector2 <- rownames(otu.table_t)
+
+check = vector1 == vector2
+cbind(vector1, vector2, check)
+
+
+
+
+###Build phyloseq object (excluding the phylogenetic tree)
+bacteria.ps <- phyloseq(otu_table(otu.table_t, taxa_are_rows = TRUE),
+                        sample_data(metadata_nifH),
+                        tax_table(taxa_nifH))
+bacteria.ps
+otu_table(bacteria.ps)
+sample_data(bacteria.ps)
+
+#exclude uncertain samples
+bacteria.ps = subset_samples(bacteria.ps, bacteria.ps@sam_data$Date.of.extraction != "Exclude")
+
+##store the DNA sequences of our ASVs in the refseq slot
+dna <- Biostrings::DNAStringSet(taxa_names(bacteria.ps))
+names(dna) <- taxa_names(bacteria.ps)
+bacteria.ps <- merge_phyloseq(bacteria.ps, dna)
+taxa_names(bacteria.ps) <- paste0("ASV", seq(ntaxa(bacteria.ps)))
+bacteria.ps
+refseq(bacteria.ps)
+
+###### TAXONOMIC FILTERING ########
+# Show available ranks in the dataset
+rank_names(bacteria.ps)
+
+# Filter non bacteria ASV
+head(tax_table(bacteria.ps), 10)
+
+bacteria.ps.filter1 = subset_taxa(bacteria.ps, Kingdom == "Bacteria")
+bacteria.ps.filter1
+ntaxa(bacteria.ps)
+ntaxa(bacteria.ps)-ntaxa(bacteria.ps.filter1)
+
+
+#### Note: By looking at the number of taxa in the OTU table before and after filtering,
+# We can see that all the sequences correspond to the bacteria kingdom.
+
+
+## The following ensures that features with ambiguous phylum annotation 
+## are also removed. Also, chloroplast and mitocondria are removed
+
+bacteria.ps.filter2 <- subset_taxa(bacteria.ps.filter1, !is.na(Phylum) & !Order %in% c("Chloroplast")
+                                   & !Family %in% c("Mitochondria"))
+
+bacteria.ps.filter2
+## check how many sequences were filter out from our raw dataset
+ntaxa(bacteria.ps.filter2)
+
+plastids = ntaxa(bacteria.ps.filter1)-ntaxa(bacteria.ps.filter2)
+
+plastids #correspond to chloroplast and mitochrondia sequences
+
+##create table, number of features for each phyla
+phylum = table(tax_table(bacteria.ps.filter2)[, "Phylum"], exclude = NULL)
+table(tax_table(bacteria.ps.filter2)[, "Phylum"], exclude = NULL)
+
+
+##Using the follwing script sintax list the phylum that have less than 10 OTUs in a dataframe
+#This can be use automatically in the following filters
+out.taxa = data.frame(phylum <10)
+out.taxa$phylum = row.names(phylum)
+out.taxaT = out.taxa == TRUE
+table(out.taxaT)
+out.taxa=out.taxa[out.taxaT,]
+out.taxa
+
+####
+
+#### Filter out phyllum with less than 10 OTUs
+# filtering by automatically listing the phylum with less than 10 OTUs
+bacteria.ps.filter3 <- subset_taxa(bacteria.ps.filter2, !Phylum %in% out.taxa$phylum)
+
+table(tax_table(bacteria.ps.filter3)[,"Phylum"], exclude = NULL)
+
+## Checking the amount of taxa filter out, and the proportion compare to the previous filter
+ntaxa(bacteria.ps.filter3)
+
+rare.otus = ntaxa(bacteria.ps.filter2)-ntaxa(bacteria.ps.filter3)
+
+rare.otus #correspond to rare OTUs
+
+#### DECONTAMINATION ####
+bacteria.ps.dataset = bacteria.ps.filter3
+
+library(devtools); packageVersion("devtools")
+library(phyloseq); packageVersion("phyloseq")
+library(decontam); packageVersion("decontam")
+#? is contaminant #Pour avoir des details
+
+#REMOVING NEGATIVE CONTROLS BECAUSE NO READS THROUGH
+
+## Exclude samples without any reads
+bacteria.ps.dataset.norm <- prune_samples(sample_sums(bacteria.ps.dataset) > 50, bacteria.ps.dataset)
+
+bacteria.ps.dataset
+bacteria.ps.dataset.norm
+
+# inspect library sizes
+df <- as.data.frame(sample_data(bacteria.ps.dataset.norm)) #Put sample_data into a ggplot-friendly data.frame
+df$LibrarySize <- sample_sums(bacteria.ps.dataset.norm)
+df <- df[order(df$LibrarySize),]
+df$Index <- seq(nrow(df))
+head(df)
+ggplot(data=df, aes(x=Index, y=LibrarySize, color=Site)) +
+  geom_point()
+
+sample_data(bacteria.ps.dataset.norm)$isneg <- sample_data(bacteria.ps.dataset.norm)$Site == "neg"
+
+## FREQUENCE AND PREVALENCE - Identification des contaminants
+# Method = "either" permet de faire les deux methodes simultanement
+set.seed(420)
+contam = isContaminant(bacteria.ps.dataset.norm, conc = "Conct_ng.ul", neg = "isneg", method = "both", threshold = c(0.5,0.5))
+
+
+#Voir allure du resultat
+head(contam, 10)
+
+#combien de contaminants
+table(contam$contaminant)
+
+#voir les contaminants
+which(contam$contaminant)
+
+##Visualisation des contaminants
+# Ne permet pas de retirer les contaminants!
+# Frequence
+plot_frequency(bacteria.ps.dataset.norm, taxa_names(bacteria.ps.dataset.norm)[c(1:9)], conc="Conct_ng.ul") + 
+  xlab("DNA.quantity_ng.ul")
+
+## Retire les contaminants (Nouvel object phyloseq)
+bacteria.ps.dataset.norm
+bacteria.ps.norm.decont <- prune_taxa(!contam$contaminant, bacteria.ps.dataset.norm)
+bacteria.ps.norm.decont
+
+
+# Exporter la table ASV dans un fichier Excel
+##write.csv2(tax_table(ps), "~/Documents/Master Tesis/nifH Analysis", row.names = TRUE) ##NO CORRIO
+
+# Check the numer of reads per sample
+sample_sums(bacteria.ps.norm.decont)
+hist(sample_sums(bacteria.ps.norm.decont), main = "Histogram: Read Counts",
+     xlab = "Total Reads", border = "black", col = "yellow", las=1, breaks = 10)
+
+##Check the number of reads per taxa
+head(taxa_sums(bacteria.ps.norm.decont),100)
+
+## Creation dun subset de phyloseq SANS negatif
+bacteria.ps.norm.decont <- subset_samples(bacteria.ps.norm.decont, Site != "neg")
+bacteria.ps.norm.decont <- subset_samples(bacteria.ps.norm.decont, Site != "nifH-MEC-01-1")
+
+# Distribution de frequence du nombre de lectures sans les controles negatifs
+hist(sample_sums(bacteria.ps.norm.decont), main = "Histogram: Read Counts",
+     xlab = "Total Reads", border = "black", col = "darkgreen", las=1, breaks = 10)
+
+saveRDS(bacteria.ps.norm.decont, "ZamiaPhyllosphere_nifH_decontam_com01.rds")
+
+
+################################################################################
+## Prevalence: number of samples in which a taxon appears at least once.
+#
+#
+bacteria.ps.norm.decont
+
+# Compute prevalence of each feature, store as data.frame
+prevdf.4 = apply(X = otu_table(bacteria.ps.norm.decont),
+                 MARGIN = ifelse(taxa_are_rows(bacteria.ps.norm.decont), yes = 1, no = 2),
+                 FUN = function(x){sum(x > 0)})
+
+##Add taxonomy and total read counts to this data.frame
+prevdf.4 = data.frame(Prevalence = prevdf.4,
+                      TotalAbundance = taxa_sums(bacteria.ps.norm.decont),
+                      tax_table(bacteria.ps.norm.decont))
+head(prevdf.4)
+plyr::ddply(prevdf.4, "Phylum", function(df1){cbind(mean(df1$Prevalence),
+                                                    sum(df1$Prevalence))})
+
+## Subset to remaining phyla
+prevdf.4.1 = subset(prevdf.4, Phylum %in% get_taxa_unique(bacteria.ps.norm.decont, "Phylum"))
+head(prevdf.4.1)
+
+ggplot(prevdf.4.1, aes(TotalAbundance, Prevalence / nsamples(bacteria.ps.norm.decont), color=Phylum)) +
+  # Include a guess for parameter
+  geom_hline(yintercept = 0.020, alpha = 0.5, linetype = 2) + geom_point(size = 2, alpha = 0.7) +
+  scale_x_log10() + xlab("Total Abundance") + ylab("Prevalence [Frac. Samples]") +
+  facet_wrap(~Phylum) +
+  theme_classic() +
+  theme(legend.position = "none")
+taxa_sums(bacteria.ps.norm.decont)
+
+## filter out phylum with prevalence = 1.00000
+#Define prevalence threshold to remove OTU present in only one sample
+prevalenceThreshold = 0.018 * nsamples(bacteria.ps.norm.decont)
+prevalenceThreshold
+
+#Execute prevalence filter, using prune_taxa() function
+keepTaxa = rownames(prevdf.4.1)[(prevdf.4.1$Prevalence >= prevalenceThreshold)]
+bacteria.ps.dataset.prev = prune_taxa(keepTaxa, bacteria.ps.norm.decont)
+bacteria.ps.dataset.prev
+table(tax_table(bacteria.ps.dataset.prev)[, "Phylum"], exclude = NULL)
+table(tax_table(bacteria.ps.dataset.prev)[, "Order"], exclude = NULL)
+rank_names(bacteria.ps.dataset.prev)
+table(tax_table(bacteria.ps.dataset.prev)[, "Family"], exclude = NULL)
+
+#number of taxa excluded after filtering
+ntaxa(bacteria.ps.norm.decont)-ntaxa(bacteria.ps.dataset.prev)
+
+#prune OTUs that are not present in at least one sample
+ps.prev.exclude = prune_taxa(taxa_sums(bacteria.ps.dataset.prev) > 0, bacteria.ps.dataset.prev)
+ntaxa(ps.prev.exclude)
+
+##All taxa are present in at least one sample
+
+#Save the new dataset in a clean phyloseq object and in dataframe
+bacteria.ps.dataset = bacteria.ps.dataset.prev
+##bacteria.df.dataset = phyloseq_to_df(bacteria.ps.dataset.prev, addtax = T, addtot = T, addmaxrank = T, sorting = "abundance")
+str(bacteria.ps.dataset)
+###Save the process Phyloseq object
+
+saveRDS(bacteria.ps.dataset, "bacteria_ps_dataset_Jan20_nifH.rds")
+###Read process Phyloseq object for following analysis
+bacteria.ps.dataset = readRDS("bacteria_ps_dataset_Jan20_nifH.rds")
+refseq(bacteria.ps.dataset)
+
+#### DESEQ2 ####
+bacteria.ps.norm.decont
+
+View(sample_data(bacteria.ps.dataset))
+##Names of our ASVs
+taxa_names(bacteria.ps.dataset)[1:10]
+##Number of reads by sample
+sample_sums(bacteria.ps.dataset)
+hist(sample_sums(bacteria.ps.dataset), breaks = 100)
+##Convert to DESeq2
+##remove samples with less than >4000 reads (counts)
+##We use our categorical explanatory variable: species
+bacteria.ps.dataset.norm <- prune_samples(sample_sums(bacteria.ps.dataset) > 100, bacteria.ps.dataset)
+sample_sums(bacteria.ps.dataset.norm)
+hist(sample_sums(bacteria.ps.dataset.norm), breaks = 100)
+
+(sample_sums(bacteria.ps.dataset) > 100) == TRUE
+#
+#
+#
+#Normalized non raredied data
+table(bacteria.ps.norm.decont@sam_data$Season)
+table(bacteria.ps.norm.decont@sam_data$Site)
+table(bacteria.ps.norm.decont@sam_data$Plant.height_m)
+table(bacteria.ps.norm.decont@sam_data$Size_No.of.leaf)
+table(bacteria.ps.norm.decont@sam_data$RH)
+
+bacteria.ps.dataset.norm.deseq <- phyloseq_to_deseq2(bacteria.ps.norm.decont, ~Site)
+
+## Calculate geometric means prior to estimate size factors
+## define a function to calculate the geometric mean
+gm_mean = function(x, na.rm=TRUE){
+  exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x))
+}
+##
+## Calculate the geometric mean for each gene using that function
+##note the use of apply(), which we instruct to apply the gm_mean()
+## function per row (this is what the second parameter, 1, indicates)
+geoMeans = apply(counts(bacteria.ps.dataset.norm.deseq), 1, gm_mean)
+#
+#
+counts(bacteria.ps.dataset.norm.deseq)
+##divide each value by its corresponding pseudo-reference value
+pseudo_ref_ratios <- counts(bacteria.ps.dataset.norm.deseq) %>% apply(., 2, function(cts){ cts/geoMeans})
+## if you want to see what that means at the single-gene level,
+## compare the result of this:
+counts(bacteria.ps.dataset.norm.deseq)[1,]/geoMeans[1]
+## With
+pseudo_ref_ratios[1,]
+## determine the median value per sample to get the size factor
+apply(pseudo_ref_ratios, 2, median)
+
+bacteria.ps.dataset.norm.deseq = estimateSizeFactors(bacteria.ps.dataset.norm.deseq, geoMeans = geoMeans) # calculate SFs, add them to object
+plot(sizeFactors(bacteria.ps.dataset.norm.deseq), colSums(counts(bacteria.ps.dataset.norm.deseq)), # asses the
+     ylab = "library sizes", xlab = "size factors", cex = .6)
+
+counts(bacteria.ps.dataset.norm.deseq)
+
+bacteria.ps.dataset.norm.deseq <- estimateDispersions(bacteria.ps.dataset.norm.deseq, fitType = "mean")
+bacteria.ps.dataset.norm.desq.var <- DESeq2::getVarianceStabilizedData(bacteria.ps.dataset.norm.deseq)
+
+## extracting normalized counts
+normalized_counts <- counts(bacteria.ps.dataset.norm.deseq, normalized=TRUE)
+normalized_counts = round(normalized_counts, 0)
+head(normalized_counts)
+
+## adding the boxplots
+boxplot(normalized_counts, main = "SF normalized", cex = .6)
+boxplot(counts(bacteria.ps.dataset.norm.deseq), main = "read counts only", cex = .6)
+
+
+par(mfrow=c(1,2)) #to plot the two box plots next to each other
+##bp of non-normalized
+boxplot(log2(counts(bacteria.ps.dataset.norm.deseq)+1), notch=TRUE,
+        main = "Non-normalized read counts",
+        ylab="log2(read counts)", cex = 0.6)
+
+## bp of size-factor normalized values
+boxplot(log2(counts(bacteria.ps.dataset.norm.deseq, normalize=TRUE) +1), notch=TRUE,
+        main = "Size-factor-normalized read counts",
+        ylab="log2(read counts)", cex = 0.6)
+
+# Formating the DESeq object back to be used in standard phylosq extensions
+# Replace the OTU table in with normalized OTU counts
+class(normalized_counts)
+otu_table(bacteria.ps.dataset.norm) <- otu_table(normalized_counts, taxa_are_rows = TRUE)
+head(otu_table(bacteria.ps.dataset.norm), 10)
+str(bacteria.ps.dataset.norm)
+###Save normalized Phyloseq object
+View(sample_data(bacteria.ps.dataset.norm))
+sample_sums(bacteria.ps.dataset.norm)
+
+saveRDS(bacteria.ps.dataset.norm, "bacteria_ps_dataset_Jan20_nifH.rds")
+###Read process Phyloseq object for following analysis
+bacteria.ps.dataset.norm = readRDS("bacteria_ps_dataset_Jan20_nifH.rds")
+otu_table(bacteria.ps.dataset.norm)
+
+## Run DESeq2 function:
+##bacteria.ps.dataset.norm.desq = DESeq(bacteria.ps.dataset.norm.deseq, test = "Wald", fitType = "mean") #no corrio
+DESeq(bacteria.ps.dataset.norm.deseq)
+bacteria.ps.dataset.norm.deseq <- DESeq(bacteria.ps.dataset.norm.deseq)
+
+## Investiga test results table
+res = results(bacteria.ps.dataset.norm.deseq)
+res = res[order(res$padj, na.last = NA), ]
+hist(res$padj)
+alpha = 0.05
+sigtab = res[(res$padj < alpha), ]
+sigtab = cbind(as(sigtab, "data.frame"), as(tax_table(bacteria.ps.dataset)[rownames(sigtab), ], "matrix"))
+str(sigtab)
+
+##sigtab contains AVSs significant under this model at p<0.05
+## the 'padj' column has the Benjamini-Hochberg corrected p-values.
+
+## Plot the results
+theme_set(theme_bw())
+scale_fill_discrete <- function(palname = "set1", ...) {
+  scale_fill_brewer(palette = palname, ...)
+}
+# phylum order
+x = tapply(sigtab$log2FoldChange, sigtab$Phylum, function(x) max(x))
+x = sort(x, TRUE)
+sigtab$Phylum = factor(as.character(sigtab$Phylum), levels = names(x))
+#Family order
+x = tapply(sigtab$log2FoldChange, sigtab$Family, function(x) max(x))
+x = sort(x, TRUE)
+sigtab$Family = factor(as.character(sigtab$Family), levels = names(x))
+ggplot(sigtab, aes(x=Family, y=log2FoldChange, color=Phylum)) + geom_point(size=6) + 
+  theme(axis.text.x = element_text(angle = -90, hjust = 0, vjust = 0.5))
+
+#rarefied samples to even sequencing depth
+bacteria.ps.dataset
+richness.df = estimate_richness(bacteria.ps.dataset.norm, split = TRUE, measures = c("Observed","Shannon","Simpson","Chao1"))
+richness.df$readcount = sample_sums(bacteria.ps.dataset.norm)
+str(richness.df)
+library("ggpubr")
+ggscatter(richness.df, x= "readcount", y = "Observed",
+          add = "reg.line", conf.int = TRUE,
+          cor.coef = TRUE, cor.method = "kendall",
+          xlab = "Read count", ylab = "Observed species")
+
+## Shapiro-Wilk normality test for mpg
+shapiro.test(richness.df$readcount) # => p= <0.001 
+hist(richness.df$Observed)
+#Shapiro-Wilk normality test for wt
+shapiro.test(richness.df$Observed) # => p= <0.001 
+hist(richness.df$Observed)
+library("ggpubr")
+#mpg
+ggqqplot(richness.df$readcount, ylab = "Read count")
+#wt
+ggqqplot(richness.df$Observed, ylab = "observed species")
+
+
+
+bacteria.ps.dataset.exclude <- prune_samples(sample_sums(bacteria.ps.dataset) > 500, bacteria.ps.dataset)
+sample_sums(bacteria.ps.dataset.exclude)
+hist(sample_sums(bacteria.ps.dataset.exclude), breaks = 100)
+richness.df.exclude = estimate_richness(bacteria.ps.dataset.exclude, split = TRUE, measures = c("Observed", "Shannon", "Simpson", "Chao1"))
+richness.df.exclude$readcount = sample_sums(bacteria.ps.dataset.exclude)
+str(richness.df.exclude)
+
+
+ggscatter(richness.df.exclude, x = "readcount", y = "Observed",
+          add = "reg.line", conf.int = TRUE,
+          cor.coef = TRUE, cor.method = "kendall",
+          xlab = "Read count", ylab = "Observed species")
+
+# Shapiro-Wilk normality test for mpg
+shapiro.test(richness.df.exclude$readcount) # # => p= <0.001 
+hist(richness.df.exclude$Observed)
+
+# Shapiro-Wilk normality test for wt
+shapiro.test(richness.df.exclude$Observed) # => p= <0.001 
+hist(richness.df.exclude$Observed)
+
+#mpg
+ggqqplot(richness.df.exclude$readcount,, ylab = "Read count")
+#wt
+ggqqplot(richness.df.exclude$Observed, ylab = "Observed species")
+
+
+(bacteria_ps_norm_rare <- phyloseq::rarefy_even_depth(bacteria.ps.dataset, rngseed = 4123, replace = FALSE))
+(bacteria_ps_norm_rare2 <- phyloseq::rarefy_even_depth(bacteria.ps.dataset, rngseed = 41323,
+                                                       sample.size=0.95*min(sample_sums(bacteria.ps.dataset)),
+                                                       replace = FALSE))
+
+hist(sample_sums(bacteria_ps_norm_rare), breaks = 100)
+head(phyloseq::sample_sums(bacteria_ps_norm_rare))
+sample_sums(bacteria_ps_norm_rare2)
+head(phyloseq::sample_sums(bacteria_ps_norm_rare2))
+
+##Save rarefied Phyloseq object
+
+saveRDS(bacteria_ps_norm_rare, "bacteria_ps_dataset_rarefied_Jan20_nifH.rds")
+###Read rarefied Phyloseq object for following analysis
+bacteria_ps_norm_rare = readRDS("bacteria_ps_dataset_rarefied_Jan20_nifH.rds")
+
+#######################
+#INDICATOR ANALYSIS
+# Core microbiota
+######################
+# non rarefied data
+bacteria.ps.dataset
+
+#ASV IDs column in the taxa table
+tax_table(bacteria.ps.dataset) <- cbind(tax_table(bacteria.ps.dataset),
+                                        rownames(tax_table(bacteria.ps.dataset)))
+colnames(tax_table(bacteria.ps.dataset)) <-
+  c("Kingdown","Phylum","Class",
+    "Order","Family","Genus","ASV") 
+
+bacteria.ps.dataset_cop = bacteria.ps.dataset
+
+tax.clean <- data.frame(tax_table(bacteria.ps.dataset))
+str(tax.clean)
+for (i in 1:6) { tax.clean[,i] <- as.character(tax.clean[,i])}
+tax.clean[is.na(tax.clean)] <- ""
+
+for (i in 1:nrow(tax.clean)) {
+  if (tax.clean[i,2] == ""){
+    kingdom <- base::paste("k", tax.clean[i,1], sep = "_")
+    tax.clean[i, 2:6] <- kingdom
+  } else if (tax.clean[i,3] == ""){
+    phylum <- base::paste("p", tax.clean[i,2], sep = "_")
+    tax.clean[i, 3:6] <- phylum
+  } else if (tax.clean[i,4] == ""){
+    class <- base::paste("c", tax.clean[i,3], sep = "_")
+    tax.clean[i, 4:6] <- class 
+  } else if (tax.clean[i,5] == ""){
+    order <- base::paste("o", tax.clean[i,4], sep = "_")
+    tax.clean[i, 5:6] <- order
+  } else if (tax.clean[i,6] == ""){
+    tax.clean$Genus[i] <- base::paste("f", tax.clean$Family[i], sep = "_")
+  }
+}
+
+##rm(class, order,phyllum, kingdown) ##no corrio
+
+library(tidyr)
+tax.clean <- tax.clean %>% unite("ASV_IDa", Genus:ASV,
+                                 remove = FALSE, sep = "_")
+tax.clean <- tax.clean %>% unite("ASV_IDb", ASV:Genus,
+                                 remove = FALSE, sep = "_")
+tax.clean <- tax.clean[, c(1,2,3,4,5,6,7,8,9,10)]
+tax.clean <- tax.clean [, c(1,2,3,4,5,6,7,8,9,10)]
+str(tax.clean)
+table(tax.clean$ASV_IDa)
+
+
+
+##Build phyloseq object (including a phylogenetic tree)
+#Create ramdam tree
+
+random_tree = rtree(ntaxa(bacteria.ps.dataset.norm), rooted = TRUE, tip.label = taxa_names(bacteria.ps.dataset.norm))
+
+seqs <- refseq(bacteria.ps.dataset)
+
+alignment <- AlignSeqs(DNAStringSet(seqs), anchor=NA)
+phang.align <- phyDat(as(alignment, "matrix"), type = "DNA")
+dm <- dist.ml(phang.align)
+treeNJ <- NJ(dm) #Note, tip order != sequence order
+fit = pml(treeNJ, data=phang.align)
+## negative edges length changed to 0!
+fitGTR <- update(fit, k=4, inv=0.2)
+fitGTR <- optim.pml(fitGTR, model = "GTR", optInv = TRUE, optGamma = TRUE,
+                    rearrangement = "stochastic",
+                    control = pml.control(trace = 0))
+fitGTR$tree
+
+################################################################
+
+#This might take time to plot tree
+plot(random_tree)
+
+top100 <- names(sort(taxa_sums(bacteria.ps.dataset), decreasing = TRUE))[1:100]
+bacteria.ps.top100 <- prune_taxa(top100, bacteria.ps.dataset)
+
+
+##ARBOL CON ASV FILTRADOS
+
+random_tree = rtree(ntaxa(bacteria.ps.top100), rooted = TRUE, tip.label = taxa_names(bacteria.ps.top100))
+
+seqs <- refseq(bacteria.ps.top100)
+
+alignment <- AlignSeqs(DNAStringSet(seqs), anchor=NA)
+phang.align <- phyDat(as(alignment, "matrix"), type = "DNA")
+dm <- dist.ml(phang.align)
+treeNJ <- NJ(dm) #Note, tip order != sequence order
+fit = pml(treeNJ, data=phang.align)
+## negative edges length changed to 0!
+fitGTR <- update(fit, k=4, inv=0.2)
+fitGTR <- optim.pml(fitGTR, model = "GTR", optInv = TRUE, optGamma = TRUE,
+                    rearrangement = "stochastic",
+                    control = pml.control(trace = 0))
+fitGTR$tree
+
+#Merge phyloseq object with the tree
+bacteria.ps.tree = merge_phyloseq(bacteria.ps, fitGTR$tree)
+
+bacteria.ps.tree
+
+
+##rename samples back
+sample_names(bacteria.ps.tree) <- gsub(pattern = "-", replacement = "__", x = sample_names(bacteria.ps.tree))
+psd <- phyloseq_to_df(bacteria.ps.tree)
+colnames(psd) <- gsub(pattern = "__", replacement = "-", x = colnames(psd))
+
+## or
+##rename samples back
+sample_names(bacteria.ps) <- paste0("z_", sample_names(bacteria.ps))
+psd <- phyloseq_to_df(bacteria.ps)
+
+
+#Export phyloseq object without filtering
+#Dataframe without the tree
+phyloseq_to_df(bacteria.ps, addtax = T, addtot = T, addmaxrank = T, sorting = "abundance") 
+#Dataframe with tree
+bacteria.unfilter.tree = phyloseq_to_df(bacteria.ps.tree, addtax = T, addtot = T, addmaxrank = T, sorting = "abundance") 
+write.csv(bacteria.unfilter.tree, "bacteria_unfilter_tree.csv")
+
+#YOU CAN SUBSET THE PHYLOSEQ OBJECT BY SPECIES
+ps.zpseudo <- subset_samples(bacteria.ps.tree , Specie %in% c("Zamia pseudoparasitica"))
+sample_data(bacteria.ps.tree)
+
+## Have a look on the data structure
+#Object without tree
+bacteria.ps
+head(otu_table(bacteria.ps), 10)
+head(sample_data(bacteria.ps), 10)
+head(otu_table(tax_table), 10) ##NO CORRIO
+
+# Object with tree
+bacteria.ps.tree
+head(otu_table(bacteria.ps.tree), 10)
+head(sample_data(bacteria.ps.tree), 10)
+head(tax_table(bacteria.ps.tree), 10)
+
+#store the DNA sequences of our ASVs in the refseq slot
+
+dna <- Biostrings::DNAStringSet(taxa_names(bacteria.ps.tree)) ##NO CORRIO
+names(dna) <- taxa_names(bacteria.ps.tree)
+bacteria.ps.tree <- merge_phyloseq(bacteria.ps.tree, dna)
+taxa_names(bacteria.ps.tree) <- paste0("ASV", seq(ntaxa(bacteria.ps.tree)))
+bacteria.ps.tree
+refseq(bacteria.ps.tree)
