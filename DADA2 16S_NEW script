@@ -1,0 +1,856 @@
+> library(dada2)
+Loading required package: Rcpp
+> packageVersion("dada2")
+[1] ‘1.30.0’
+> library(ShortRead)
+Loading required package: BiocGenerics
+
+Attaching package: ‘BiocGenerics’
+
+The following objects are masked from ‘package:stats’:
+
+    IQR, mad, sd, var, xtabs
+
+The following objects are masked from ‘package:base’:
+
+    anyDuplicated, aperm, append, as.data.frame, basename, cbind, colnames, dirname, do.call, duplicated,
+    eval, evalq, Filter, Find, get, grep, grepl, intersect, is.unsorted, lapply, Map, mapply, match, mget,
+    order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank, rbind, Reduce, rownames, sapply, setdiff,
+    sort, table, tapply, union, unique, unsplit, which.max, which.min
+
+Loading required package: BiocParallel
+Loading required package: Biostrings
+Loading required package: S4Vectors
+Loading required package: stats4
+
+Attaching package: ‘S4Vectors’
+
+The following object is masked from ‘package:utils’:
+
+    findMatches
+
+The following objects are masked from ‘package:base’:
+
+    expand.grid, I, unname
+
+Loading required package: IRanges
+
+Attaching package: ‘IRanges’
+
+The following object is masked from ‘package:phyloseq’:
+
+    distance
+
+Loading required package: XVector
+Loading required package: GenomeInfoDb
+
+Attaching package: ‘Biostrings’
+
+The following object is masked from ‘package:base’:
+
+    strsplit
+
+Loading required package: Rsamtools
+Loading required package: GenomicRanges
+Loading required package: GenomicAlignments
+Loading required package: SummarizedExperiment
+Loading required package: MatrixGenerics
+Loading required package: matrixStats
+
+Attaching package: ‘MatrixGenerics’
+
+The following objects are masked from ‘package:matrixStats’:
+
+    colAlls, colAnyNAs, colAnys, colAvgsPerRowSet, colCollapse, colCounts, colCummaxs, colCummins,
+    colCumprods, colCumsums, colDiffs, colIQRDiffs, colIQRs, colLogSumExps, colMadDiffs, colMads, colMaxs,
+    colMeans2, colMedians, colMins, colOrderStats, colProds, colQuantiles, colRanges, colRanks, colSdDiffs,
+    colSds, colSums2, colTabulates, colVarDiffs, colVars, colWeightedMads, colWeightedMeans,
+    colWeightedMedians, colWeightedSds, colWeightedVars, rowAlls, rowAnyNAs, rowAnys, rowAvgsPerColSet,
+    rowCollapse, rowCounts, rowCummaxs, rowCummins, rowCumprods, rowCumsums, rowDiffs, rowIQRDiffs, rowIQRs,
+    rowLogSumExps, rowMadDiffs, rowMads, rowMaxs, rowMeans2, rowMedians, rowMins, rowOrderStats, rowProds,
+    rowQuantiles, rowRanges, rowRanks, rowSdDiffs, rowSds, rowSums2, rowTabulates, rowVarDiffs, rowVars,
+    rowWeightedMads, rowWeightedMeans, rowWeightedMedians, rowWeightedSds, rowWeightedVars
+
+Loading required package: Biobase
+Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with 'browseVignettes()'. To cite Bioconductor, see
+    'citation("Biobase")', and for packages 'citation("pkgname")'.
+
+
+Attaching package: ‘Biobase’
+
+The following object is masked from ‘package:MatrixGenerics’:
+
+    rowMedians
+
+The following objects are masked from ‘package:matrixStats’:
+
+    anyMissing, rowMedians
+
+The following object is masked from ‘package:phyloseq’:
+
+    sampleNames
+
+> packageVersion("ShortRead")
+[1] ‘1.60.0’
+> library(Biostrings)
+> packageVersion("Biostrings")
+[1] ‘2.70.2’
+> library(phyloseq)
+> library(dplyr)
+
+Attaching package: ‘dplyr’
+
+The following object is masked from ‘package:ShortRead’:
+
+    id
+
+The following objects are masked from ‘package:GenomicAlignments’:
+
+    first, last
+
+The following object is masked from ‘package:Biobase’:
+
+    combine
+
+The following object is masked from ‘package:matrixStats’:
+
+    count
+
+The following objects are masked from ‘package:GenomicRanges’:
+
+    intersect, setdiff, union
+
+The following objects are masked from ‘package:Biostrings’:
+
+    collapse, intersect, setdiff, setequal, union
+
+The following object is masked from ‘package:GenomeInfoDb’:
+
+    intersect
+
+The following object is masked from ‘package:XVector’:
+
+    slice
+
+The following objects are masked from ‘package:IRanges’:
+
+    collapse, desc, intersect, setdiff, slice, union
+
+The following objects are masked from ‘package:S4Vectors’:
+
+    first, intersect, rename, setdiff, setequal, union
+
+The following objects are masked from ‘package:BiocGenerics’:
+
+    combine, intersect, setdiff, union
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+> setwd("~/Documents/Master Tesis/16S_Analysis_NEW")
+> path <- "~/Documents/Master Tesis/16S_Analysis_NEW/cutadapt"
+> list.files(path)
+  [1] "16S-BLANCO1_S120_L001_R1_001.fastq.gz"  "16S-BLANCO1_S120_L001_R2_001.fastq.gz" 
+  [3] "16S-BLANCO2_S122_L001_R1_001.fastq.gz"  "16S-BLANCO2_S122_L001_R2_001.fastq.gz" 
+  [5] "16S-MEC-01-1_S52_L001_R1_001.fastq.gz"  "16S-MEC-01-1_S52_L001_R2_001.fastq.gz" 
+  [7] "16S-MEC-01-2_S60_L001_R1_001.fastq.gz"  "16S-MEC-01-2_S60_L001_R2_001.fastq.gz" 
+  [9] "16S-MEC-02-1_S84_L001_R1_001.fastq.gz"  "16S-MEC-02-1_S84_L001_R2_001.fastq.gz" 
+ [11] "16S-MEC-02-2_S92_L001_R1_001.fastq.gz"  "16S-MEC-02-2_S92_L001_R2_001.fastq.gz" 
+ [13] "16S-MEC-03-1_S21_L001_R1_001.fastq.gz"  "16S-MEC-03-1_S21_L001_R2_001.fastq.gz" 
+ [15] "16S-MEC-03-2_S29_L001_R1_001.fastq.gz"  "16S-MEC-03-2_S29_L001_R2_001.fastq.gz" 
+ [17] "16S-MEC-04-1_S53_L001_R1_001.fastq.gz"  "16S-MEC-04-1_S53_L001_R2_001.fastq.gz" 
+ [19] "16S-MEC-04-2_S61_L001_R1_001.fastq.gz"  "16S-MEC-04-2_S61_L001_R2_001.fastq.gz" 
+ [21] "16S-MEC-05-1_S85_L001_R1_001.fastq.gz"  "16S-MEC-05-1_S85_L001_R2_001.fastq.gz" 
+ [23] "16S-MEC-05-2_S93_L001_R1_001.fastq.gz"  "16S-MEC-05-2_S93_L001_R2_001.fastq.gz" 
+ [25] "16S-MEC-06-1_S22_L001_R1_001.fastq.gz"  "16S-MEC-06-1_S22_L001_R2_001.fastq.gz" 
+ [27] "16S-MEC-07-1_S46_L001_R1_001.fastq.gz"  "16S-MEC-07-1_S46_L001_R2_001.fastq.gz" 
+ [29] "16S-MEC-07-2_S54_L001_R1_001.fastq.gz"  "16S-MEC-07-2_S54_L001_R2_001.fastq.gz" 
+ [31] "16S-MEC-08-1_S78_L001_R1_001.fastq.gz"  "16S-MEC-08-1_S78_L001_R2_001.fastq.gz" 
+ [33] "16S-MEC-08-2_S86_L001_R1_001.fastq.gz"  "16S-MEC-08-2_S86_L001_R2_001.fastq.gz" 
+ [35] "16S-MEC-09-1_S15_L001_R1_001.fastq.gz"  "16S-MEC-09-1_S15_L001_R2_001.fastq.gz" 
+ [37] "16S-MEC-09-2_S23_L001_R1_001.fastq.gz"  "16S-MEC-09-2_S23_L001_R2_001.fastq.gz" 
+ [39] "16S-MEC-10-1_S47_L001_R1_001.fastq.gz"  "16S-MEC-10-1_S47_L001_R2_001.fastq.gz" 
+ [41] "16S-MEC-10-2_S55_L001_R1_001.fastq.gz"  "16S-MEC-10-2_S55_L001_R2_001.fastq.gz" 
+ [43] "16S-MPS-01-1_S79_L001_R1_001.fastq.gz"  "16S-MPS-01-1_S79_L001_R2_001.fastq.gz" 
+ [45] "16S-MPS-01-2_S87_L001_R1_001.fastq.gz"  "16S-MPS-01-2_S87_L001_R2_001.fastq.gz" 
+ [47] "16S-MPS-02-1_S16_L001_R1_001.fastq.gz"  "16S-MPS-02-1_S16_L001_R2_001.fastq.gz" 
+ [49] "16S-MPS-02-2_S24_L001_R1_001.fastq.gz"  "16S-MPS-02-2_S24_L001_R2_001.fastq.gz" 
+ [51] "16S-MPS-03-1_S48_L001_R1_001.fastq.gz"  "16S-MPS-03-1_S48_L001_R2_001.fastq.gz" 
+ [53] "16S-MPS-03-2_S56_L001_R1_001.fastq.gz"  "16S-MPS-03-2_S56_L001_R2_001.fastq.gz" 
+ [55] "16S-MPS-04-1_S80_L001_R1_001.fastq.gz"  "16S-MPS-04-1_S80_L001_R2_001.fastq.gz" 
+ [57] "16S-MPS-04-2_S88_L001_R1_001.fastq.gz"  "16S-MPS-04-2_S88_L001_R2_001.fastq.gz" 
+ [59] "16S-MPS-05-1_S100_L001_R1_001.fastq.gz" "16S-MPS-05-1_S100_L001_R2_001.fastq.gz"
+ [61] "16S-MPS-05-2_S103_L001_R1_001.fastq.gz" "16S-MPS-05-2_S103_L001_R2_001.fastq.gz"
+ [63] "16S-MPS-06-1_S109_L001_R1_001.fastq.gz" "16S-MPS-06-1_S109_L001_R2_001.fastq.gz"
+ [65] "16S-MPS-06-2_S111_L001_R1_001.fastq.gz" "16S-MPS-06-2_S111_L001_R2_001.fastq.gz"
+ [67] "16S-MPS-07-1_S117_L001_R1_001.fastq.gz" "16S-MPS-07-1_S117_L001_R2_001.fastq.gz"
+ [69] "16S-MPS-07-2_S119_L001_R1_001.fastq.gz" "16S-MPS-07-2_S119_L001_R2_001.fastq.gz"
+ [71] "16S-MPS-08-2_S101_L001_R1_001.fastq.gz" "16S-MPS-08-2_S101_L001_R2_001.fastq.gz"
+ [73] "16S-MPS-21-1_S108_L001_R1_001.fastq.gz" "16S-MPS-21-1_S108_L001_R2_001.fastq.gz"
+ [75] "16S-MPS-21-2_S110_L001_R1_001.fastq.gz" "16S-MPS-21-2_S110_L001_R2_001.fastq.gz"
+ [77] "16S-MPS-29-1_S116_L001_R1_001.fastq.gz" "16S-MPS-29-1_S116_L001_R2_001.fastq.gz"
+ [79] "16S-MPS-29-2_S118_L001_R1_001.fastq.gz" "16S-MPS-29-2_S118_L001_R2_001.fastq.gz"
+ [81] "16S-MSF-07-1_S1_L001_R1_001.fastq.gz"   "16S-MSF-07-1_S1_L001_R2_001.fastq.gz"  
+ [83] "16S-MSF-07-2_S9_L001_R1_001.fastq.gz"   "16S-MSF-07-2_S9_L001_R2_001.fastq.gz"  
+ [85] "16S-MSF-08-1_S33_L001_R1_001.fastq.gz"  "16S-MSF-08-1_S33_L001_R2_001.fastq.gz" 
+ [87] "16S-MSF-08-2_S41_L001_R1_001.fastq.gz"  "16S-MSF-08-2_S41_L001_R2_001.fastq.gz" 
+ [89] "16S-MSF-09-1_S65_L001_R1_001.fastq.gz"  "16S-MSF-09-1_S65_L001_R2_001.fastq.gz" 
+ [91] "16S-MSF-09-2_S73_L001_R1_001.fastq.gz"  "16S-MSF-09-2_S73_L001_R2_001.fastq.gz" 
+ [93] "16S-MSF-10-1_S2_L001_R1_001.fastq.gz"   "16S-MSF-10-1_S2_L001_R2_001.fastq.gz"  
+ [95] "16S-MSF-10-2_S10_L001_R1_001.fastq.gz"  "16S-MSF-10-2_S10_L001_R2_001.fastq.gz" 
+ [97] "16S-MSF-11-1_S34_L001_R1_001.fastq.gz"  "16S-MSF-11-1_S34_L001_R2_001.fastq.gz" 
+ [99] "16S-MSF-11-2_S42_L001_R1_001.fastq.gz"  "16S-MSF-11-2_S42_L001_R2_001.fastq.gz" 
+[101] "16S-MSF-17-1_S66_L001_R1_001.fastq.gz"  "16S-MSF-17-1_S66_L001_R2_001.fastq.gz" 
+[103] "16S-MSF-17-2_S74_L001_R1_001.fastq.gz"  "16S-MSF-17-2_S74_L001_R2_001.fastq.gz" 
+[105] "16S-MSF-18-1_S3_L001_R1_001.fastq.gz"   "16S-MSF-18-1_S3_L001_R2_001.fastq.gz"  
+[107] "16S-MSF-18-2_S11_L001_R1_001.fastq.gz"  "16S-MSF-18-2_S11_L001_R2_001.fastq.gz" 
+[109] "16S-MSF-19-1_S35_L001_R1_001.fastq.gz"  "16S-MSF-19-1_S35_L001_R2_001.fastq.gz" 
+[111] "16S-MSF-19-2_S43_L001_R1_001.fastq.gz"  "16S-MSF-19-2_S43_L001_R2_001.fastq.gz" 
+[113] "16S-MSF-21-1_S67_L001_R1_001.fastq.gz"  "16S-MSF-21-1_S67_L001_R2_001.fastq.gz" 
+[115] "16S-MSF-21-2_S75_L001_R1_001.fastq.gz"  "16S-MSF-21-2_S75_L001_R2_001.fastq.gz" 
+[117] "16S-MSF-22-1_S4_L001_R1_001.fastq.gz"   "16S-MSF-22-1_S4_L001_R2_001.fastq.gz"  
+[119] "16S-MSF-22-2_S12_L001_R1_001.fastq.gz"  "16S-MSF-22-2_S12_L001_R2_001.fastq.gz" 
+[121] "16S-NEGATIVO_S102_L001_R1_001.fastq.gz" "16S-NEGATIVO_S102_L001_R2_001.fastq.gz"
+[123] "16S-OEC-01-1_S36_L001_R1_001.fastq.gz"  "16S-OEC-01-1_S36_L001_R2_001.fastq.gz" 
+[125] "16S-OEC-01-2_S44_L001_R1_001.fastq.gz"  "16S-OEC-01-2_S44_L001_R2_001.fastq.gz" 
+[127] "16S-OEC-02-1_S68_L001_R1_001.fastq.gz"  "16S-OEC-02-1_S68_L001_R2_001.fastq.gz" 
+[129] "16S-OEC-02-2_S76_L001_R1_001.fastq.gz"  "16S-OEC-02-2_S76_L001_R2_001.fastq.gz" 
+[131] "16S-OEC-03-1_S5_L001_R1_001.fastq.gz"   "16S-OEC-03-1_S5_L001_R2_001.fastq.gz"  
+[133] "16S-OEC-03-2_S13_L001_R1_001.fastq.gz"  "16S-OEC-03-2_S13_L001_R2_001.fastq.gz" 
+[135] "16S-OEC-04-1_S37_L001_R1_001.fastq.gz"  "16S-OEC-04-1_S37_L001_R2_001.fastq.gz" 
+[137] "16S-OEC-04-2_S45_L001_R1_001.fastq.gz"  "16S-OEC-04-2_S45_L001_R2_001.fastq.gz" 
+[139] "16S-OEC-05-1_S69_L001_R1_001.fastq.gz"  "16S-OEC-05-1_S69_L001_R2_001.fastq.gz" 
+[141] "16S-OEC-05-2_S77_L001_R1_001.fastq.gz"  "16S-OEC-05-2_S77_L001_R2_001.fastq.gz" 
+[143] "16S-OEC-06-1_S6_L001_R1_001.fastq.gz"   "16S-OEC-06-1_S6_L001_R2_001.fastq.gz"  
+[145] "16S-OEC-06-2_S14_L001_R1_001.fastq.gz"  "16S-OEC-06-2_S14_L001_R2_001.fastq.gz" 
+[147] "16S-OEC-07-1_S30_L001_R1_001.fastq.gz"  "16S-OEC-07-1_S30_L001_R2_001.fastq.gz" 
+[149] "16S-OEC-07-2_S38_L001_R1_001.fastq.gz"  "16S-OEC-07-2_S38_L001_R2_001.fastq.gz" 
+[151] "16S-OEC-08-1_S62_L001_R1_001.fastq.gz"  "16S-OEC-08-1_S62_L001_R2_001.fastq.gz" 
+[153] "16S-OEC-08-2_S70_L001_R1_001.fastq.gz"  "16S-OEC-08-2_S70_L001_R2_001.fastq.gz" 
+[155] "16S-OEC-09-1_S94_L001_R1_001.fastq.gz"  "16S-OEC-09-1_S94_L001_R2_001.fastq.gz" 
+[157] "16S-OEC-09-2_S7_L001_R1_001.fastq.gz"   "16S-OEC-09-2_S7_L001_R2_001.fastq.gz"  
+[159] "16S-OEC-10-1_S31_L001_R1_001.fastq.gz"  "16S-OEC-10-1_S31_L001_R2_001.fastq.gz" 
+[161] "16S-OEC-10-2_S39_L001_R1_001.fastq.gz"  "16S-OEC-10-2_S39_L001_R2_001.fastq.gz" 
+[163] "16S-OPS-01-1_S63_L001_R1_001.fastq.gz"  "16S-OPS-01-1_S63_L001_R2_001.fastq.gz" 
+[165] "16S-OPS-01-2_S71_L001_R1_001.fastq.gz"  "16S-OPS-01-2_S71_L001_R2_001.fastq.gz" 
+[167] "16S-OPS-02-1_S95_L001_R1_001.fastq.gz"  "16S-OPS-02-1_S95_L001_R2_001.fastq.gz" 
+[169] "16S-OPS-02-2_S8_L001_R1_001.fastq.gz"   "16S-OPS-02-2_S8_L001_R2_001.fastq.gz"  
+[171] "16S-OPS-03-1_S32_L001_R1_001.fastq.gz"  "16S-OPS-03-1_S32_L001_R2_001.fastq.gz" 
+[173] "16S-OPS-03-2_S40_L001_R1_001.fastq.gz"  "16S-OPS-03-2_S40_L001_R2_001.fastq.gz" 
+[175] "16S-OPS-04-1_S64_L001_R1_001.fastq.gz"  "16S-OPS-04-1_S64_L001_R2_001.fastq.gz" 
+[177] "16S-OPS-04-2_S72_L001_R1_001.fastq.gz"  "16S-OPS-04-2_S72_L001_R2_001.fastq.gz" 
+[179] "16S-OPS-05-1_S96_L001_R1_001.fastq.gz"  "16S-OPS-05-1_S96_L001_R2_001.fastq.gz" 
+[181] "16S-OPS-05-2_S97_L001_R1_001.fastq.gz"  "16S-OPS-05-2_S97_L001_R2_001.fastq.gz" 
+[183] "16S-OPS-06-1_S105_L001_R1_001.fastq.gz" "16S-OPS-06-1_S105_L001_R2_001.fastq.gz"
+[185] "16S-OPS-06-2_S107_L001_R1_001.fastq.gz" "16S-OPS-06-2_S107_L001_R2_001.fastq.gz"
+[187] "16S-OPS-07-1_S113_L001_R1_001.fastq.gz" "16S-OPS-07-1_S113_L001_R2_001.fastq.gz"
+[189] "16S-OPS-07-2_S115_L001_R1_001.fastq.gz" "16S-OPS-07-2_S115_L001_R2_001.fastq.gz"
+[191] "16S-OPS-08-1_S121_L001_R1_001.fastq.gz" "16S-OPS-08-1_S121_L001_R2_001.fastq.gz"
+[193] "16S-OPS-08-2_S98_L001_R1_001.fastq.gz"  "16S-OPS-08-2_S98_L001_R2_001.fastq.gz" 
+[195] "16S-OPS-21-1_S104_L001_R1_001.fastq.gz" "16S-OPS-21-1_S104_L001_R2_001.fastq.gz"
+[197] "16S-OPS-29-1_S112_L001_R1_001.fastq.gz" "16S-OPS-29-1_S112_L001_R2_001.fastq.gz"
+[199] "16S-OPS-29-2_S114_L001_R1_001.fastq.gz" "16S-OPS-29-2_S114_L001_R2_001.fastq.gz"
+[201] "16S-OPS21-2_S106_L001_R1_001.fastq.gz"  "16S-OPS21-2_S106_L001_R2_001.fastq.gz" 
+[203] "16S-OSF-07-1_S17_L001_R1_001.fastq.gz"  "16S-OSF-07-1_S17_L001_R2_001.fastq.gz" 
+[205] "16S-OSF-07-2_S25_L001_R1_001.fastq.gz"  "16S-OSF-07-2_S25_L001_R2_001.fastq.gz" 
+[207] "16S-OSF-08-1_S49_L001_R1_001.fastq.gz"  "16S-OSF-08-1_S49_L001_R2_001.fastq.gz" 
+[209] "16S-OSF-08-2_S57_L001_R1_001.fastq.gz"  "16S-OSF-08-2_S57_L001_R2_001.fastq.gz" 
+[211] "16S-OSF-09-1_S81_L001_R1_001.fastq.gz"  "16S-OSF-09-1_S81_L001_R2_001.fastq.gz" 
+[213] "16S-OSF-09-2_S89_L001_R1_001.fastq.gz"  "16S-OSF-09-2_S89_L001_R2_001.fastq.gz" 
+[215] "16S-OSF-10-1_S18_L001_R1_001.fastq.gz"  "16S-OSF-10-1_S18_L001_R2_001.fastq.gz" 
+[217] "16S-OSF-10-2_S26_L001_R1_001.fastq.gz"  "16S-OSF-10-2_S26_L001_R2_001.fastq.gz" 
+[219] "16S-OSF-11-1_S50_L001_R1_001.fastq.gz"  "16S-OSF-11-1_S50_L001_R2_001.fastq.gz" 
+[221] "16S-OSF-11-2_S58_L001_R1_001.fastq.gz"  "16S-OSF-11-2_S58_L001_R2_001.fastq.gz" 
+[223] "16S-OSF-17-1_S82_L001_R1_001.fastq.gz"  "16S-OSF-17-1_S82_L001_R2_001.fastq.gz" 
+[225] "16S-OSF-17-2_S90_L001_R1_001.fastq.gz"  "16S-OSF-17-2_S90_L001_R2_001.fastq.gz" 
+[227] "16S-OSF-18-1_S19_L001_R1_001.fastq.gz"  "16S-OSF-18-1_S19_L001_R2_001.fastq.gz" 
+[229] "16S-OSF-18-2_S27_L001_R1_001.fastq.gz"  "16S-OSF-18-2_S27_L001_R2_001.fastq.gz" 
+[231] "16S-OSF-19-1_S51_L001_R1_001.fastq.gz"  "16S-OSF-19-1_S51_L001_R2_001.fastq.gz" 
+[233] "16S-OSF-19-2_S59_L001_R1_001.fastq.gz"  "16S-OSF-19-2_S59_L001_R2_001.fastq.gz" 
+[235] "16S-OSF-21-1_S83_L001_R1_001.fastq.gz"  "16S-OSF-21-1_S83_L001_R2_001.fastq.gz" 
+[237] "16S-OSF-21-2_S91_L001_R1_001.fastq.gz"  "16S-OSF-21-2_S91_L001_R2_001.fastq.gz" 
+[239] "16S-OSF-22-1_S20_L001_R1_001.fastq.gz"  "16S-OSF-22-1_S20_L001_R2_001.fastq.gz" 
+[241] "16S-OSF-22-2_S28_L001_R1_001.fastq.gz"  "16S-OSF-22-2_S28_L001_R2_001.fastq.gz" 
+[243] "16S-POSITIVO_S99_L001_R1_001.fastq.gz"  "16S-POSITIVO_S99_L001_R2_001.fastq.gz" 
+[245] "filtered"                              
+> fnFs <- sort(list.files(path, pattern="_R1_001.fastq", full.names = TRUE))
+> fnRs <- sort(list.files(path, pattern="_R2_001.fastq", full.names = TRUE))
+> sample.names <- sapply(strsplit(basename(fnFs), "_"), `[`, 1)
+> plotQualityProfile(fnFs[3:4])
+> plotQualityProfile(fnRs[3:4])
+> #place filtered files in filtered/subdirectory
+> filtFs <- file.path(path, "filtered", paste0(sample.names,"_F_filt.fastq.gz"))
+> filtRs <- file.path(path, "filtered", paste0(sample.names,"_R_filt.fastq.gz"))
+> names(filtFs) <- sample.names
+> names(filtRs) <- sample.names
+> out = filterAndTrim(fnFs, filtFs, fnRs, filtRs, trimRight = c(0,50), 
++                     maxN = 0, maxEE = c(2,2), truncQ = 2, rm.phix = TRUE, 
++                     compress = TRUE, multithread = TRUE)
+> head(out)
+                                      reads.in reads.out
+16S-BLANCO1_S120_L001_R1_001.fastq.gz     5628      3571
+16S-BLANCO2_S122_L001_R1_001.fastq.gz    52501     29514
+16S-MEC-01-1_S52_L001_R1_001.fastq.gz    29626     25206
+16S-MEC-01-2_S60_L001_R1_001.fastq.gz    42408     35925
+16S-MEC-02-1_S84_L001_R1_001.fastq.gz    41004     27321
+16S-MEC-02-2_S92_L001_R1_001.fastq.gz    22357     13845
+> ##Learn the error rates
+> errF <- learnErrors(filtFs, multithread=TRUE)
+106425639 total bases in 458766 reads from 16 samples will be used for learning the error rates.
+> errR <- learnErrors(filtRs, multithread=TRUE)
+103839350 total bases in 561463 reads from 20 samples will be used for learning the error rates.
+> plotErrors(errF, nominalQ = TRUE)
+Warning messages:
+1: In scale_y_log10() :
+  log-10 transformation introduced infinite values.
+2: In scale_y_log10() :
+  log-10 transformation introduced infinite values.
+> ##Sample inference
+> dadaFs <- dada(filtFs, err = errF, multithread = TRUE)
+Sample 1 - 3571 reads in 763 unique sequences.
+Sample 2 - 29514 reads in 14622 unique sequences.
+Sample 3 - 25206 reads in 13109 unique sequences.
+Sample 4 - 35925 reads in 16745 unique sequences.
+Sample 5 - 27321 reads in 12072 unique sequences.
+Sample 6 - 13845 reads in 5742 unique sequences.
+Sample 7 - 27293 reads in 11802 unique sequences.
+Sample 8 - 43841 reads in 17915 unique sequences.
+Sample 9 - 27350 reads in 11057 unique sequences.
+Sample 10 - 77914 reads in 33532 unique sequences.
+Sample 11 - 25441 reads in 11083 unique sequences.
+Sample 12 - 24015 reads in 10973 unique sequences.
+Sample 13 - 29708 reads in 15035 unique sequences.
+Sample 14 - 26119 reads in 11087 unique sequences.
+Sample 15 - 13743 reads in 6732 unique sequences.
+Sample 16 - 27960 reads in 11221 unique sequences.
+Sample 17 - 23047 reads in 9160 unique sequences.
+Sample 18 - 26213 reads in 11676 unique sequences.
+Sample 19 - 25311 reads in 11787 unique sequences.
+Sample 20 - 28126 reads in 12470 unique sequences.
+Sample 21 - 23819 reads in 11442 unique sequences.
+Sample 22 - 25457 reads in 11676 unique sequences.
+Sample 23 - 29469 reads in 12218 unique sequences.
+Sample 24 - 34905 reads in 14423 unique sequences.
+Sample 25 - 32854 reads in 14044 unique sequences.
+Sample 26 - 17607 reads in 8078 unique sequences.
+Sample 27 - 11480 reads in 5762 unique sequences.
+Sample 28 - 25734 reads in 11172 unique sequences.
+Sample 29 - 22008 reads in 9846 unique sequences.
+Sample 30 - 69077 reads in 27576 unique sequences.
+Sample 31 - 53334 reads in 22928 unique sequences.
+Sample 32 - 34262 reads in 15010 unique sequences.
+Sample 33 - 23947 reads in 10755 unique sequences.
+Sample 34 - 39692 reads in 13489 unique sequences.
+Sample 35 - 52447 reads in 17476 unique sequences.
+Sample 36 - 78569 reads in 31757 unique sequences.
+Sample 37 - 44644 reads in 16099 unique sequences.
+Sample 38 - 39095 reads in 15395 unique sequences.
+Sample 39 - 51544 reads in 17983 unique sequences.
+Sample 40 - 65254 reads in 25908 unique sequences.
+Sample 41 - 22264 reads in 10544 unique sequences.
+Sample 42 - 18368 reads in 8846 unique sequences.
+Sample 43 - 31054 reads in 14290 unique sequences.
+Sample 44 - 23430 reads in 10522 unique sequences.
+Sample 45 - 29454 reads in 13135 unique sequences.
+Sample 46 - 10120 reads in 4544 unique sequences.
+Sample 47 - 30558 reads in 12528 unique sequences.
+Sample 48 - 29080 reads in 12555 unique sequences.
+Sample 49 - 18869 reads in 7405 unique sequences.
+Sample 50 - 18758 reads in 7796 unique sequences.
+Sample 51 - 26091 reads in 12271 unique sequences.
+Sample 52 - 28880 reads in 12287 unique sequences.
+Sample 53 - 21749 reads in 9886 unique sequences.
+Sample 54 - 16579 reads in 8017 unique sequences.
+Sample 55 - 29009 reads in 12693 unique sequences.
+Sample 56 - 30197 reads in 12569 unique sequences.
+Sample 57 - 19275 reads in 8511 unique sequences.
+Sample 58 - 8165 reads in 3816 unique sequences.
+Sample 59 - 40565 reads in 17852 unique sequences.
+Sample 60 - 20096 reads in 8984 unique sequences.
+Sample 61 - 13764 reads in 3435 unique sequences.
+Sample 62 - 35206 reads in 14425 unique sequences.
+Sample 63 - 25328 reads in 9687 unique sequences.
+Sample 64 - 37128 reads in 17106 unique sequences.
+Sample 65 - 25055 reads in 10746 unique sequences.
+Sample 66 - 40321 reads in 16866 unique sequences.
+Sample 67 - 29105 reads in 11535 unique sequences.
+Sample 68 - 29673 reads in 12256 unique sequences.
+Sample 69 - 35148 reads in 14689 unique sequences.
+Sample 70 - 37953 reads in 16941 unique sequences.
+Sample 71 - 31127 reads in 13073 unique sequences.
+Sample 72 - 33594 reads in 15600 unique sequences.
+Sample 73 - 30463 reads in 13716 unique sequences.
+Sample 74 - 17974 reads in 7209 unique sequences.
+Sample 75 - 28561 reads in 12464 unique sequences.
+Sample 76 - 49428 reads in 20798 unique sequences.
+Sample 77 - 38846 reads in 16723 unique sequences.
+Sample 78 - 34034 reads in 14056 unique sequences.
+Sample 79 - 30383 reads in 13360 unique sequences.
+Sample 80 - 36729 reads in 16450 unique sequences.
+Sample 81 - 26163 reads in 11952 unique sequences.
+Sample 82 - 36412 reads in 17022 unique sequences.
+Sample 83 - 18373 reads in 9136 unique sequences.
+Sample 84 - 28515 reads in 13447 unique sequences.
+Sample 85 - 72557 reads in 31172 unique sequences.
+Sample 86 - 22789 reads in 10956 unique sequences.
+Sample 87 - 23564 reads in 11720 unique sequences.
+Sample 88 - 1964 reads in 1151 unique sequences.
+Sample 89 - 23187 reads in 11540 unique sequences.
+Sample 90 - 17609 reads in 7346 unique sequences.
+Sample 91 - 40604 reads in 16484 unique sequences.
+Sample 92 - 47597 reads in 19871 unique sequences.
+Sample 93 - 33271 reads in 13727 unique sequences.
+Sample 94 - 72132 reads in 25916 unique sequences.
+Sample 95 - 72607 reads in 30461 unique sequences.
+Sample 96 - 53423 reads in 21960 unique sequences.
+Sample 97 - 72106 reads in 25753 unique sequences.
+Sample 98 - 62388 reads in 26466 unique sequences.
+Sample 99 - 24918 reads in 11019 unique sequences.
+Sample 100 - 88576 reads in 33222 unique sequences.
+Sample 101 - 64755 reads in 25957 unique sequences.
+Sample 102 - 17187 reads in 7673 unique sequences.
+Sample 103 - 29043 reads in 12646 unique sequences.
+Sample 104 - 14026 reads in 7384 unique sequences.
+Sample 105 - 25713 reads in 11535 unique sequences.
+Sample 106 - 5898 reads in 2364 unique sequences.
+Sample 107 - 6225 reads in 2957 unique sequences.
+Sample 108 - 23518 reads in 11218 unique sequences.
+Sample 109 - 35285 reads in 15980 unique sequences.
+Sample 110 - 15365 reads in 7806 unique sequences.
+Sample 111 - 33747 reads in 14395 unique sequences.
+Sample 112 - 28834 reads in 12110 unique sequences.
+Sample 113 - 23738 reads in 10486 unique sequences.
+Sample 114 - 25406 reads in 11880 unique sequences.
+Sample 115 - 22671 reads in 9652 unique sequences.
+Sample 116 - 19766 reads in 10192 unique sequences.
+Sample 117 - 32638 reads in 15577 unique sequences.
+Sample 118 - 31027 reads in 11971 unique sequences.
+Sample 119 - 17514 reads in 7581 unique sequences.
+Sample 120 - 25686 reads in 12813 unique sequences.
+Sample 121 - 17277 reads in 7585 unique sequences.
+Sample 122 - 15259 reads in 8277 unique sequences.
+> dadaRs <- dada(filtRs, err = errR, multithread = TRUE)
+Sample 1 - 3571 reads in 1747 unique sequences.
+Sample 2 - 29514 reads in 19540 unique sequences.
+Sample 3 - 25206 reads in 11542 unique sequences.
+Sample 4 - 35925 reads in 14943 unique sequences.
+Sample 5 - 27321 reads in 16851 unique sequences.
+Sample 6 - 13845 reads in 9102 unique sequences.
+Sample 7 - 27293 reads in 11378 unique sequences.
+Sample 8 - 43841 reads in 17965 unique sequences.
+Sample 9 - 27350 reads in 11216 unique sequences.
+Sample 10 - 77914 reads in 28797 unique sequences.
+Sample 11 - 25441 reads in 15979 unique sequences.
+Sample 12 - 24015 reads in 15944 unique sequences.
+Sample 13 - 29708 reads in 14013 unique sequences.
+Sample 14 - 26119 reads in 13968 unique sequences.
+Sample 15 - 13743 reads in 6225 unique sequences.
+Sample 16 - 27960 reads in 13968 unique sequences.
+Sample 17 - 23047 reads in 13429 unique sequences.
+Sample 18 - 26213 reads in 11893 unique sequences.
+Sample 19 - 25311 reads in 10590 unique sequences.
+Sample 20 - 28126 reads in 15010 unique sequences.
+Sample 21 - 23819 reads in 9746 unique sequences.
+Sample 22 - 25457 reads in 12669 unique sequences.
+Sample 23 - 29469 reads in 17108 unique sequences.
+Sample 24 - 34905 reads in 17595 unique sequences.
+Sample 25 - 32854 reads in 15073 unique sequences.
+Sample 26 - 17607 reads in 10557 unique sequences.
+Sample 27 - 11480 reads in 5857 unique sequences.
+Sample 28 - 25734 reads in 14520 unique sequences.
+Sample 29 - 22008 reads in 14610 unique sequences.
+Sample 30 - 69077 reads in 26884 unique sequences.
+Sample 31 - 53334 reads in 19006 unique sequences.
+Sample 32 - 34262 reads in 16453 unique sequences.
+Sample 33 - 23947 reads in 9308 unique sequences.
+Sample 34 - 39692 reads in 14823 unique sequences.
+Sample 35 - 52447 reads in 24402 unique sequences.
+Sample 36 - 78569 reads in 32292 unique sequences.
+Sample 37 - 44644 reads in 15912 unique sequences.
+Sample 38 - 39095 reads in 18236 unique sequences.
+Sample 39 - 51544 reads in 18079 unique sequences.
+Sample 40 - 65254 reads in 33806 unique sequences.
+Sample 41 - 22264 reads in 10481 unique sequences.
+Sample 42 - 18368 reads in 9275 unique sequences.
+Sample 43 - 31054 reads in 15097 unique sequences.
+Sample 44 - 23430 reads in 13224 unique sequences.
+Sample 45 - 29454 reads in 12714 unique sequences.
+Sample 46 - 10120 reads in 5610 unique sequences.
+Sample 47 - 30558 reads in 12332 unique sequences.
+Sample 48 - 29080 reads in 12924 unique sequences.
+Sample 49 - 18869 reads in 8609 unique sequences.
+Sample 50 - 18758 reads in 10561 unique sequences.
+Sample 51 - 26091 reads in 11281 unique sequences.
+Sample 52 - 28880 reads in 14138 unique sequences.
+Sample 53 - 21749 reads in 9606 unique sequences.
+Sample 54 - 16579 reads in 8339 unique sequences.
+Sample 55 - 29009 reads in 13282 unique sequences.
+Sample 56 - 30197 reads in 15714 unique sequences.
+Sample 57 - 19275 reads in 9228 unique sequences.
+Sample 58 - 8165 reads in 4849 unique sequences.
+Sample 59 - 40565 reads in 16729 unique sequences.
+Sample 60 - 20096 reads in 9239 unique sequences.
+Sample 61 - 13764 reads in 3400 unique sequences.
+Sample 62 - 35206 reads in 15347 unique sequences.
+Sample 63 - 25328 reads in 12679 unique sequences.
+Sample 64 - 37128 reads in 16121 unique sequences.
+Sample 65 - 25055 reads in 11844 unique sequences.
+Sample 66 - 40321 reads in 16804 unique sequences.
+Sample 67 - 29105 reads in 12693 unique sequences.
+Sample 68 - 29673 reads in 12973 unique sequences.
+Sample 69 - 35148 reads in 18883 unique sequences.
+Sample 70 - 37953 reads in 16361 unique sequences.
+Sample 71 - 31127 reads in 15480 unique sequences.
+Sample 72 - 33594 reads in 15098 unique sequences.
+Sample 73 - 30463 reads in 14289 unique sequences.
+Sample 74 - 17974 reads in 7526 unique sequences.
+Sample 75 - 28561 reads in 13002 unique sequences.
+Sample 76 - 49428 reads in 18099 unique sequences.
+Sample 77 - 38846 reads in 16139 unique sequences.
+Sample 78 - 34034 reads in 20837 unique sequences.
+Sample 79 - 30383 reads in 13009 unique sequences.
+Sample 80 - 36729 reads in 15399 unique sequences.
+Sample 81 - 26163 reads in 11921 unique sequences.
+Sample 82 - 36412 reads in 14980 unique sequences.
+Sample 83 - 18373 reads in 8722 unique sequences.
+Sample 84 - 28515 reads in 18221 unique sequences.
+Sample 85 - 72557 reads in 34404 unique sequences.
+Sample 86 - 22789 reads in 11647 unique sequences.
+Sample 87 - 23564 reads in 12805 unique sequences.
+Sample 88 - 1964 reads in 1195 unique sequences.
+Sample 89 - 23187 reads in 12056 unique sequences.
+Sample 90 - 17609 reads in 11979 unique sequences.
+Sample 91 - 40604 reads in 15128 unique sequences.
+Sample 92 - 47597 reads in 18139 unique sequences.
+Sample 93 - 33271 reads in 13049 unique sequences.
+Sample 94 - 72132 reads in 21002 unique sequences.
+Sample 95 - 72607 reads in 27333 unique sequences.
+Sample 96 - 53423 reads in 31235 unique sequences.
+Sample 97 - 72106 reads in 24073 unique sequences.
+Sample 98 - 62388 reads in 23745 unique sequences.
+Sample 99 - 24918 reads in 9285 unique sequences.
+Sample 100 - 88576 reads in 32509 unique sequences.
+Sample 101 - 64755 reads in 24940 unique sequences.
+Sample 102 - 17187 reads in 7800 unique sequences.
+Sample 103 - 29043 reads in 13178 unique sequences.
+Sample 104 - 14026 reads in 6375 unique sequences.
+Sample 105 - 25713 reads in 10808 unique sequences.
+Sample 106 - 5898 reads in 3456 unique sequences.
+Sample 107 - 6225 reads in 4166 unique sequences.
+Sample 108 - 23518 reads in 10389 unique sequences.
+Sample 109 - 35285 reads in 15864 unique sequences.
+Sample 110 - 15365 reads in 6224 unique sequences.
+Sample 111 - 33747 reads in 12380 unique sequences.
+Sample 112 - 28834 reads in 17070 unique sequences.
+Sample 113 - 23738 reads in 14781 unique sequences.
+Sample 114 - 25406 reads in 11252 unique sequences.
+Sample 115 - 22671 reads in 9671 unique sequences.
+Sample 116 - 19766 reads in 8949 unique sequences.
+Sample 117 - 32638 reads in 13674 unique sequences.
+Sample 118 - 31027 reads in 18364 unique sequences.
+Sample 119 - 17514 reads in 11075 unique sequences.
+Sample 120 - 25686 reads in 11316 unique sequences.
+Sample 121 - 17277 reads in 7686 unique sequences.
+Sample 122 - 15259 reads in 8151 unique sequences.
+> dadaFs[[1]]
+dada-class: object describing DADA2 denoising results
+27 sequence variants were inferred from 763 input unique sequences.
+Key parameters: OMEGA_A = 1e-40, OMEGA_C = 1e-40, BAND_SIZE = 16
+> mergers <- mergePairs(dadaFs, filtFs, dadaRs, filtRs, verbose = TRUE)
+3418 paired-reads (in 24 unique pairings) successfully merged out of 3557 (in 30 pairings) input.
+16012 paired-reads (in 433 unique pairings) successfully merged out of 26194 (in 4192 pairings) input.
+14061 paired-reads (in 574 unique pairings) successfully merged out of 21708 (in 3005 pairings) input.
+22551 paired-reads (in 722 unique pairings) successfully merged out of 32152 (in 3154 pairings) input.
+16390 paired-reads (in 376 unique pairings) successfully merged out of 24728 (in 2644 pairings) input.
+8572 paired-reads (in 221 unique pairings) successfully merged out of 12495 (in 1031 pairings) input.
+17699 paired-reads (in 515 unique pairings) successfully merged out of 24735 (in 2276 pairings) input.
+30609 paired-reads (in 615 unique pairings) successfully merged out of 40931 (in 2978 pairings) input.
+19401 paired-reads (in 365 unique pairings) successfully merged out of 25267 (in 1851 pairings) input.
+56014 paired-reads (in 1249 unique pairings) successfully merged out of 71475 (in 5876 pairings) input.
+15997 paired-reads (in 362 unique pairings) successfully merged out of 22889 (in 2049 pairings) input.
+14647 paired-reads (in 368 unique pairings) successfully merged out of 21545 (in 2238 pairings) input.
+17287 paired-reads (in 623 unique pairings) successfully merged out of 26208 (in 2777 pairings) input.
+18165 paired-reads (in 372 unique pairings) successfully merged out of 24131 (in 1805 pairings) input.
+8535 paired-reads (in 314 unique pairings) successfully merged out of 12172 (in 1197 pairings) input.
+20534 paired-reads (in 385 unique pairings) successfully merged out of 26005 (in 1713 pairings) input.
+16057 paired-reads (in 365 unique pairings) successfully merged out of 21352 (in 1492 pairings) input.
+18437 paired-reads (in 417 unique pairings) successfully merged out of 23950 (in 1968 pairings) input.
+17339 paired-reads (in 409 unique pairings) successfully merged out of 22961 (in 1968 pairings) input.
+19512 paired-reads (in 473 unique pairings) successfully merged out of 25707 (in 2056 pairings) input.
+15744 paired-reads (in 476 unique pairings) successfully merged out of 21464 (in 2210 pairings) input.
+16972 paired-reads (in 486 unique pairings) successfully merged out of 23126 (in 1949 pairings) input.
+20274 paired-reads (in 449 unique pairings) successfully merged out of 27028 (in 2306 pairings) input.
+25400 paired-reads (in 557 unique pairings) successfully merged out of 32389 (in 2475 pairings) input.
+24009 paired-reads (in 557 unique pairings) successfully merged out of 30540 (in 2185 pairings) input.
+11120 paired-reads (in 328 unique pairings) successfully merged out of 15854 (in 1474 pairings) input.
+6866 paired-reads (in 269 unique pairings) successfully merged out of 10093 (in 1164 pairings) input.
+17581 paired-reads (in 450 unique pairings) successfully merged out of 23504 (in 2133 pairings) input.
+14171 paired-reads (in 320 unique pairings) successfully merged out of 20093 (in 1987 pairings) input.
+49454 paired-reads (in 855 unique pairings) successfully merged out of 64536 (in 5397 pairings) input.
+37215 paired-reads (in 860 unique pairings) successfully merged out of 49350 (in 4625 pairings) input.
+23034 paired-reads (in 553 unique pairings) successfully merged out of 31357 (in 3234 pairings) input.
+16290 paired-reads (in 387 unique pairings) successfully merged out of 21982 (in 2119 pairings) input.
+32842 paired-reads (in 367 unique pairings) successfully merged out of 38552 (in 1291 pairings) input.
+43437 paired-reads (in 548 unique pairings) successfully merged out of 50408 (in 2296 pairings) input.
+57188 paired-reads (in 954 unique pairings) successfully merged out of 73267 (in 5668 pairings) input.
+37120 paired-reads (in 601 unique pairings) successfully merged out of 42828 (in 1940 pairings) input.
+29152 paired-reads (in 576 unique pairings) successfully merged out of 36462 (in 2594 pairings) input.
+41743 paired-reads (in 461 unique pairings) successfully merged out of 49982 (in 1814 pairings) input.
+45839 paired-reads (in 1007 unique pairings) successfully merged out of 60367 (in 4490 pairings) input.
+14159 paired-reads (in 442 unique pairings) successfully merged out of 19886 (in 1910 pairings) input.
+11437 paired-reads (in 364 unique pairings) successfully merged out of 16233 (in 1668 pairings) input.
+19755 paired-reads (in 602 unique pairings) successfully merged out of 27741 (in 2760 pairings) input.
+15462 paired-reads (in 425 unique pairings) successfully merged out of 21300 (in 2133 pairings) input.
+20450 paired-reads (in 509 unique pairings) successfully merged out of 27258 (in 2348 pairings) input.
+6529 paired-reads (in 189 unique pairings) successfully merged out of 9241 (in 674 pairings) input.
+23442 paired-reads (in 428 unique pairings) successfully merged out of 28839 (in 1918 pairings) input.
+20629 paired-reads (in 441 unique pairings) successfully merged out of 26855 (in 2068 pairings) input.
+13874 paired-reads (in 218 unique pairings) successfully merged out of 17783 (in 1114 pairings) input.
+12661 paired-reads (in 277 unique pairings) successfully merged out of 17255 (in 1205 pairings) input.
+17416 paired-reads (in 455 unique pairings) successfully merged out of 23778 (in 2478 pairings) input.
+20307 paired-reads (in 423 unique pairings) successfully merged out of 26781 (in 2271 pairings) input.
+14833 paired-reads (in 347 unique pairings) successfully merged out of 20116 (in 1666 pairings) input.
+10630 paired-reads (in 288 unique pairings) successfully merged out of 14995 (in 1403 pairings) input.
+20246 paired-reads (in 381 unique pairings) successfully merged out of 26858 (in 2116 pairings) input.
+21440 paired-reads (in 375 unique pairings) successfully merged out of 28048 (in 2176 pairings) input.
+12631 paired-reads (in 277 unique pairings) successfully merged out of 17846 (in 1308 pairings) input.
+4738 paired-reads (in 127 unique pairings) successfully merged out of 7346 (in 544 pairings) input.
+29148 paired-reads (in 681 unique pairings) successfully merged out of 37557 (in 3087 pairings) input.
+13591 paired-reads (in 342 unique pairings) successfully merged out of 18532 (in 1618 pairings) input.
+13719 paired-reads (in 22 unique pairings) successfully merged out of 13762 (in 28 pairings) input.
+25394 paired-reads (in 488 unique pairings) successfully merged out of 32774 (in 2498 pairings) input.
+18424 paired-reads (in 331 unique pairings) successfully merged out of 23441 (in 1766 pairings) input.
+25058 paired-reads (in 619 unique pairings) successfully merged out of 33596 (in 3155 pairings) input.
+17132 paired-reads (in 407 unique pairings) successfully merged out of 23000 (in 2073 pairings) input.
+28416 paired-reads (in 590 unique pairings) successfully merged out of 37138 (in 2825 pairings) input.
+21011 paired-reads (in 425 unique pairings) successfully merged out of 27038 (in 1708 pairings) input.
+21016 paired-reads (in 444 unique pairings) successfully merged out of 27471 (in 2089 pairings) input.
+23153 paired-reads (in 442 unique pairings) successfully merged out of 32135 (in 2484 pairings) input.
+25428 paired-reads (in 684 unique pairings) successfully merged out of 34201 (in 3328 pairings) input.
+21652 paired-reads (in 560 unique pairings) successfully merged out of 28352 (in 2466 pairings) input.
+21379 paired-reads (in 675 unique pairings) successfully merged out of 30187 (in 3147 pairings) input.
+19035 paired-reads (in 560 unique pairings) successfully merged out of 27517 (in 2874 pairings) input.
+13788 paired-reads (in 402 unique pairings) successfully merged out of 16887 (in 994 pairings) input.
+19732 paired-reads (in 499 unique pairings) successfully merged out of 26201 (in 2142 pairings) input.
+35299 paired-reads (in 849 unique pairings) successfully merged out of 45972 (in 3308 pairings) input.
+25399 paired-reads (in 613 unique pairings) successfully merged out of 35688 (in 2954 pairings) input.
+22368 paired-reads (in 547 unique pairings) successfully merged out of 30770 (in 2823 pairings) input.
+21634 paired-reads (in 527 unique pairings) successfully merged out of 28008 (in 2154 pairings) input.
+25272 paired-reads (in 657 unique pairings) successfully merged out of 33728 (in 2648 pairings) input.
+17525 paired-reads (in 495 unique pairings) successfully merged out of 23981 (in 2035 pairings) input.
+23209 paired-reads (in 585 unique pairings) successfully merged out of 32998 (in 3151 pairings) input.
+11364 paired-reads (in 350 unique pairings) successfully merged out of 16143 (in 1627 pairings) input.
+16434 paired-reads (in 462 unique pairings) successfully merged out of 25256 (in 2791 pairings) input.
+50622 paired-reads (in 1133 unique pairings) successfully merged out of 66428 (in 5738 pairings) input.
+14361 paired-reads (in 434 unique pairings) successfully merged out of 20072 (in 1987 pairings) input.
+14450 paired-reads (in 448 unique pairings) successfully merged out of 20741 (in 2272 pairings) input.
+988 paired-reads (in 50 unique pairings) successfully merged out of 1557 (in 188 pairings) input.
+14674 paired-reads (in 434 unique pairings) successfully merged out of 20295 (in 1910 pairings) input.
+11771 paired-reads (in 236 unique pairings) successfully merged out of 16271 (in 1336 pairings) input.
+29981 paired-reads (in 598 unique pairings) successfully merged out of 38031 (in 2890 pairings) input.
+34652 paired-reads (in 725 unique pairings) successfully merged out of 44817 (in 2874 pairings) input.
+25128 paired-reads (in 438 unique pairings) successfully merged out of 31601 (in 1820 pairings) input.
+53853 paired-reads (in 514 unique pairings) successfully merged out of 69817 (in 2844 pairings) input.
+52514 paired-reads (in 1057 unique pairings) successfully merged out of 67430 (in 5300 pairings) input.
+35306 paired-reads (in 701 unique pairings) successfully merged out of 48998 (in 4513 pairings) input.
+53695 paired-reads (in 562 unique pairings) successfully merged out of 69726 (in 3571 pairings) input.
+42966 paired-reads (in 893 unique pairings) successfully merged out of 57695 (in 5032 pairings) input.
+17252 paired-reads (in 488 unique pairings) successfully merged out of 22407 (in 2117 pairings) input.
+63718 paired-reads (in 1109 unique pairings) successfully merged out of 84802 (in 4296 pairings) input.
+46927 paired-reads (in 924 unique pairings) successfully merged out of 59564 (in 4399 pairings) input.
+11487 paired-reads (in 282 unique pairings) successfully merged out of 15581 (in 1388 pairings) input.
+19683 paired-reads (in 452 unique pairings) successfully merged out of 26366 (in 2321 pairings) input.
+8088 paired-reads (in 315 unique pairings) successfully merged out of 12250 (in 1576 pairings) input.
+18238 paired-reads (in 393 unique pairings) successfully merged out of 23618 (in 1803 pairings) input.
+4129 paired-reads (in 91 unique pairings) successfully merged out of 5350 (in 371 pairings) input.
+3572 paired-reads (in 144 unique pairings) successfully merged out of 5409 (in 579 pairings) input.
+15386 paired-reads (in 412 unique pairings) successfully merged out of 21387 (in 2151 pairings) input.
+22358 paired-reads (in 535 unique pairings) successfully merged out of 32423 (in 2940 pairings) input.
+9315 paired-reads (in 328 unique pairings) successfully merged out of 13561 (in 1795 pairings) input.
+24439 paired-reads (in 530 unique pairings) successfully merged out of 31347 (in 2340 pairings) input.
+18744 paired-reads (in 405 unique pairings) successfully merged out of 26216 (in 2535 pairings) input.
+14255 paired-reads (in 331 unique pairings) successfully merged out of 21537 (in 2315 pairings) input.
+16483 paired-reads (in 416 unique pairings) successfully merged out of 22859 (in 2179 pairings) input.
+15720 paired-reads (in 342 unique pairings) successfully merged out of 20877 (in 1687 pairings) input.
+11351 paired-reads (in 375 unique pairings) successfully merged out of 17243 (in 2379 pairings) input.
+20429 paired-reads (in 536 unique pairings) successfully merged out of 29436 (in 3042 pairings) input.
+19637 paired-reads (in 310 unique pairings) successfully merged out of 28898 (in 2265 pairings) input.
+11150 paired-reads (in 227 unique pairings) successfully merged out of 16101 (in 1389 pairings) input.
+15466 paired-reads (in 506 unique pairings) successfully merged out of 22801 (in 2514 pairings) input.
+11925 paired-reads (in 299 unique pairings) successfully merged out of 15765 (in 1257 pairings) input.
+8200 paired-reads (in 351 unique pairings) successfully merged out of 12877 (in 1467 pairings) input.
+> head(mergers[[1]])
+                                                                                                                                                                                                                                                                                                         sequence
+1 GTAGTCCACGCTGTAAACGGTGGGTACTAGGTGTGGGGTCCATTCCACGGGTTCCGTGCCGTAGCTAACGCTTTAAGTACCCCGCCTGGGGAGTACGGCCGCAAGGCTAAAACTCAAAGGAATTGACGGGGCCCCGCACAAGCGGCGGAGCATGCGGATTAATTCGATGCAACGCGTAGAACCTTACCTGGGTTTGACATGGATCGGGAGTGCTCAGAGATGGGTGTGCCTCTTTTGGGGTCGGTTCACAGGTGGTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG
+2 GTAGTCCACGCTGTAAACGGTGGGTACTAGGTGTGGGGTCCATTCCACGGGTTCCGTGCCGTAGCTAACGCTTTAAGTACCCCGCCTGGGGAGTACGGCCGCAAGGCTAAAACTCAAAGGAATTGACGGGGCCCCGCACAAGCGGCGGAGCATGCGGATTAATTCGATGCAACGCGTAGAACCTTACCTGGGTTTGACATGGATCGGGAGCGCTCAGAGATGGGTGTGCCTCTTTTGGGGTCGGTTCACAGGTGGTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG
+3     GTAGTCCACGCCCTAAACGATGACAATTAGCTGTTGGGCTTTGAAAGGCTTAGTAGCGAAGCTAACGCGAGAAATTGTCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGACCCGCACAAGCGGTGGATGATGTGGATTAATTCGATGCAACGCGAAGAACCTTACCTGGTCTTGGCATGTACGGAATTTTTTAGAGATAAAAAAGTGCCTTCGGGAACCGTAACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG
+4 GTAGTCCACGCCGTAAACGATGAGTGCTAAGTGTTAGGGGGTTTCCGCCCCTTAGTGCTGCAGCTAACGCATTAAGCACTCCGCCTGGGGAGTACGACCGCAAGGTTGAAACTCAAAGGAATTGACGGGGACCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGAAGAACCTTACCAAATCTTGACATCCTTTGACCCTTCTAGAGATAGAAGTTTCCCCTTCGGGGGACAAAGTGACAGGTGGTGCATGGTTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG
+5   GTAGTCCACGCCCTAAACGATGTCAACTGGTTGTTGGGAGGGTTTCTTCTCAGTAACGTAGCTAACGCGTGAAGTTGACCGCCTGGGGAGTACGGCCGCAAGGTTGAAACTCAAAGGAATTGACGGGGACCCGCACAAGCGGTGGATGATGTGGTTTAATTCGATGCAACGCGAAAAACCTTACCTACCCTTGACATGTCTGGAATCCTGAAGAGATTTGGGAGTGCTCGAAAGAGAGCCAGAACACAGGTGCTGCATGGCCGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG
+6 GTAGTCCACGCCGTAAACGATGAGTGCTAAGTGTTAGGGGGTTTCCGCCCCTTAGTGCTGCAGCTAACGCATTAAGCACTCCGCCTGGGGAGTACGACCGCAAGGTTGAAACTCAAAGGAATTGACGGGGACCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGAAGAACCTTACCAAATCTTGACATCCTCTGACCCCTCTAGAGATAGAGTTTTCCCCTTCGGGGGACAGAGTGACAGGTGGTGCATGGTTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG
+  abundance forward reverse nmatch nmismatch nindel prefer accept
+1      1614       1       1    114         0      0      1   TRUE
+2       159      25      23    114         0      0      1   TRUE
+3       144       4       4    118         0      0      1   TRUE
+4       143       2       2    114         0      0      1   TRUE
+5       138       3       7    116         0      0      1   TRUE
+6       116       5       5    114         0      0      1   TRUE
+> ##Constructing the sequence table
+> seqtab <- makeSequenceTable(mergers)
+> dim(seqtab)
+[1]   122 20095
+> ##inspecting the distribution of sequence lengths
+> table(nchar(getSequences(seqtab)))
+
+ 101  104  108  109  111  114  116  117  119  120  123  126  127  128  129  130  131  135  139  140  141  146  151  152 
+   2    1    1    2    1    1    2    1    1    2    1    1    1    1    2    1    1    1    2    1    1    2    1    1 
+ 153  154  155  158  160  161  165  166  170  171  174  176  182  185  186  187  189  196  199  204  205  207  211  219 
+   2    1    1    1    3    1    1    1    1    2    1    1    2    3    5    1    1    1    3    2    1    2    2    1 
+ 220  221  222  228  229  232  239  246  249  250  251  252  253  254  255  256  257  259  262  263  265  266  267  268 
+   1    1    1    1    1    4    1    1    1    1    2    2    1    3    1    2    1    2    1    3    1    2    2    1 
+ 269  271  272  273  274  275  276  277  278  279  280  283  284  285  286  287  288  289  290  291  292  293  294  295 
+   2    1    2    3    3    3    1    9   11    7    5    6    3    3   11    3    1    1    4    9   29   21  274  622 
+ 296  297  298  299  300  301  302  303  304  305  306  307  308  309  310  311  312  313  314  315  316  317  318  319 
+ 624  983 1159 2924 2839 3722 2694 1754 1157  329  223   44   29   25   29   14   40   24   47   25   16   10   16   19 
+ 320  321  322  323  324  325  326  327  328  329  330  331  332  333  334  335  336  337  339  340  341  342  343  348 
+  26    9    4    6   12   12    6    4    5   10   14    5    5    4    1   13    9    1    1    2    2    2    9    2 
+ 353  355  356  357  361  364  366  367  369  372  373  382  384  387  394  397  400  403  405 
+   1    3    1    1   10    1    1    2    5    1    1    1    1    1    1    3    1    1    7 
+> ##Remove chimeras
+> seqtab.nochim <- removeBimeraDenovo(seqtab, method = "consensus", multithread = TRUE, verbose = TRUE)
+Identified 3906 bimeras out of 20095 input sequences.
+> dim(seqtab.nochim)
+[1]   122 16189
+> sum(seqtab.nochim)/sum(seqtab)
+[1] 0.9836491
+> ##Track reads through the pipeline
+> getN <- function(x) sum(getUniques(x))
+> track <- cbind(out, sapply(dadaFs, getN), sapply(dadaRs, getN), sapply(mergers, getN), rowSums(seqtab.nochim))
+> colnames(track) <- c("input", "filtered", "denoisedF", "denoisedR", "merged", "nonchim")
+> rownames(track) <- sample.names
+> head(track)
+             input filtered denoisedF denoisedR merged nonchim
+16S-BLANCO1   5628     3571      3557      3566   3418    3418
+16S-BLANCO2  52501    29514     26585     28963  16012   15289
+16S-MEC-01-1 29626    25206     22411     24189  14061   13920
+16S-MEC-01-2 42408    35925     33176     34500  22551   22316
+16S-MEC-02-1 41004    27321     25235     26623  16390   16316
+16S-MEC-02-2 22357    13845     12925     13307   8572    8562
+> ##Assign taxonomy
+> taxa_16S <- assignTaxonomy(seqtab.nochim, "~/Documents/Master Tesis/16S_Analysis_NEW/silva_nr99_v138.1_train_set.fa.gz", multithread=TRUE) 
+> head(taxa_16S)
+                                                                                                                                                                                                                                                                                                                Kingdom   
+GTAGTCCACGCCGTAAACGATGGATGCTAGCCGTTGGTCAGCTTGCTGAGCAGTGGCGCAGTTAACGCTTTAAGCATCCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCAGCTTTTGACATGTCTCGTATGGTCGCCAGAGATGGCTTCCTTCAGTTCGGCTGGCGAGAACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG "Bacteria"
+GTAGTCCACGCCCTAAACGATGGATGCTAGCCGTTAGGCAGCTTGCTGCTTAGTGGCGCAGTTAACGCTTTAAGCATCCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCAGCTTTTGACATGTCCGGTATGGGTTCCAGAGATGGGATCCTTCAGTTCGGCTGGCCGGAACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG "Bacteria"
+GTAGTCCACGCCGTAAACGGTGGGTACTAGGTGTGGGTTTCCTTCCTTGGGATCCGTGCCGTAGCTAACGCATTAAGTACCCCGCCTGGGGAGTACGGCCGCAAGGCTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGCGGAGCATGTGGATTAATTCGATGCAACGCGAAGAACCTTACCTGGGTTTGACATGCACAGGACGCCGGTAGAGATATCGGTTCCCTTGTGGTCTGTGTGCAGGTGGTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG    "Bacteria"
+GTAGTCCACGCTGTAAACGATGAGAGCTAGTTGTCGGCACGCATGCGTGTCGGTGACGCAGCTAACGCATTAAGCTCTCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCACCTTTTGACATGTCCGGACAACTCCAGAGATGGAGCTTTCCCTTCGGGGACTGGAACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG     "Bacteria"
+GTAGTCCACGCTGTAAACGATGAGTGCTAGTTGTCGGCGGGCATGCCCGTCGGTGACGCAGCTAACGCATTAAGCACTCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCACCTTTTGACATGCCTGGACCGCACCGGAGACGGTGCTTTCCCTTCGGGGACTGGGACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG     "Bacteria"
+GTAGTCCACGCTGTAAACGATGGGCACTAGGTGTGGGGGGTGTCGACTCCCTCCGTGCCGACGCTAACGCATTAAGTGCCCCGCCTGGGGAGTACGGCCGCAAGGCTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCAGCGGAGCATGTGGTTTAATTCGACGCAACGCGAAGAACCTTACCTGGGCTTGACATGTTCCTGACCGCCGTGGAAACACGGCTTCCCTTCGGGGCAGGATCACAGGTGGTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG    "Bacteria"
+                                                                                                                                                                                                                                                                                                                Phylum            
+GTAGTCCACGCCGTAAACGATGGATGCTAGCCGTTGGTCAGCTTGCTGAGCAGTGGCGCAGTTAACGCTTTAAGCATCCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCAGCTTTTGACATGTCTCGTATGGTCGCCAGAGATGGCTTCCTTCAGTTCGGCTGGCGAGAACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG "Proteobacteria"  
+GTAGTCCACGCCCTAAACGATGGATGCTAGCCGTTAGGCAGCTTGCTGCTTAGTGGCGCAGTTAACGCTTTAAGCATCCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCAGCTTTTGACATGTCCGGTATGGGTTCCAGAGATGGGATCCTTCAGTTCGGCTGGCCGGAACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG "Proteobacteria"  
+GTAGTCCACGCCGTAAACGGTGGGTACTAGGTGTGGGTTTCCTTCCTTGGGATCCGTGCCGTAGCTAACGCATTAAGTACCCCGCCTGGGGAGTACGGCCGCAAGGCTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGCGGAGCATGTGGATTAATTCGATGCAACGCGAAGAACCTTACCTGGGTTTGACATGCACAGGACGCCGGTAGAGATATCGGTTCCCTTGTGGTCTGTGTGCAGGTGGTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG    "Actinobacteriota"
+GTAGTCCACGCTGTAAACGATGAGAGCTAGTTGTCGGCACGCATGCGTGTCGGTGACGCAGCTAACGCATTAAGCTCTCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCACCTTTTGACATGTCCGGACAACTCCAGAGATGGAGCTTTCCCTTCGGGGACTGGAACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG     "Proteobacteria"  
+GTAGTCCACGCTGTAAACGATGAGTGCTAGTTGTCGGCGGGCATGCCCGTCGGTGACGCAGCTAACGCATTAAGCACTCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCACCTTTTGACATGCCTGGACCGCACCGGAGACGGTGCTTTCCCTTCGGGGACTGGGACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG     "Proteobacteria"  
+GTAGTCCACGCTGTAAACGATGGGCACTAGGTGTGGGGGGTGTCGACTCCCTCCGTGCCGACGCTAACGCATTAAGTGCCCCGCCTGGGGAGTACGGCCGCAAGGCTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCAGCGGAGCATGTGGTTTAATTCGACGCAACGCGAAGAACCTTACCTGGGCTTGACATGTTCCTGACCGCCGTGGAAACACGGCTTCCCTTCGGGGCAGGATCACAGGTGGTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG    "Actinobacteriota"
+                                                                                                                                                                                                                                                                                                                Class                
+GTAGTCCACGCCGTAAACGATGGATGCTAGCCGTTGGTCAGCTTGCTGAGCAGTGGCGCAGTTAACGCTTTAAGCATCCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCAGCTTTTGACATGTCTCGTATGGTCGCCAGAGATGGCTTCCTTCAGTTCGGCTGGCGAGAACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG "Alphaproteobacteria"
+GTAGTCCACGCCCTAAACGATGGATGCTAGCCGTTAGGCAGCTTGCTGCTTAGTGGCGCAGTTAACGCTTTAAGCATCCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCAGCTTTTGACATGTCCGGTATGGGTTCCAGAGATGGGATCCTTCAGTTCGGCTGGCCGGAACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG "Alphaproteobacteria"
+GTAGTCCACGCCGTAAACGGTGGGTACTAGGTGTGGGTTTCCTTCCTTGGGATCCGTGCCGTAGCTAACGCATTAAGTACCCCGCCTGGGGAGTACGGCCGCAAGGCTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGCGGAGCATGTGGATTAATTCGATGCAACGCGAAGAACCTTACCTGGGTTTGACATGCACAGGACGCCGGTAGAGATATCGGTTCCCTTGTGGTCTGTGTGCAGGTGGTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG    "Actinobacteria"     
+GTAGTCCACGCTGTAAACGATGAGAGCTAGTTGTCGGCACGCATGCGTGTCGGTGACGCAGCTAACGCATTAAGCTCTCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCACCTTTTGACATGTCCGGACAACTCCAGAGATGGAGCTTTCCCTTCGGGGACTGGAACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG     "Alphaproteobacteria"
+GTAGTCCACGCTGTAAACGATGAGTGCTAGTTGTCGGCGGGCATGCCCGTCGGTGACGCAGCTAACGCATTAAGCACTCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCACCTTTTGACATGCCTGGACCGCACCGGAGACGGTGCTTTCCCTTCGGGGACTGGGACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG     "Alphaproteobacteria"
+GTAGTCCACGCTGTAAACGATGGGCACTAGGTGTGGGGGGTGTCGACTCCCTCCGTGCCGACGCTAACGCATTAAGTGCCCCGCCTGGGGAGTACGGCCGCAAGGCTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCAGCGGAGCATGTGGTTTAATTCGACGCAACGCGAAGAACCTTACCTGGGCTTGACATGTTCCTGACCGCCGTGGAAACACGGCTTCCCTTCGGGGCAGGATCACAGGTGGTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG    "Thermoleophilia"    
+                                                                                                                                                                                                                                                                                                                Order                
+GTAGTCCACGCCGTAAACGATGGATGCTAGCCGTTGGTCAGCTTGCTGAGCAGTGGCGCAGTTAACGCTTTAAGCATCCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCAGCTTTTGACATGTCTCGTATGGTCGCCAGAGATGGCTTCCTTCAGTTCGGCTGGCGAGAACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG "Rhizobiales"        
+GTAGTCCACGCCCTAAACGATGGATGCTAGCCGTTAGGCAGCTTGCTGCTTAGTGGCGCAGTTAACGCTTTAAGCATCCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCAGCTTTTGACATGTCCGGTATGGGTTCCAGAGATGGGATCCTTCAGTTCGGCTGGCCGGAACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG "Rhizobiales"        
+GTAGTCCACGCCGTAAACGGTGGGTACTAGGTGTGGGTTTCCTTCCTTGGGATCCGTGCCGTAGCTAACGCATTAAGTACCCCGCCTGGGGAGTACGGCCGCAAGGCTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGCGGAGCATGTGGATTAATTCGATGCAACGCGAAGAACCTTACCTGGGTTTGACATGCACAGGACGCCGGTAGAGATATCGGTTCCCTTGTGGTCTGTGTGCAGGTGGTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG    "Corynebacteriales"  
+GTAGTCCACGCTGTAAACGATGAGAGCTAGTTGTCGGCACGCATGCGTGTCGGTGACGCAGCTAACGCATTAAGCTCTCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCACCTTTTGACATGTCCGGACAACTCCAGAGATGGAGCTTTCCCTTCGGGGACTGGAACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG     "Caulobacterales"    
+GTAGTCCACGCTGTAAACGATGAGTGCTAGTTGTCGGCGGGCATGCCCGTCGGTGACGCAGCTAACGCATTAAGCACTCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCACCTTTTGACATGCCTGGACCGCACCGGAGACGGTGCTTTCCCTTCGGGGACTGGGACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG     "Caulobacterales"    
+GTAGTCCACGCTGTAAACGATGGGCACTAGGTGTGGGGGGTGTCGACTCCCTCCGTGCCGACGCTAACGCATTAAGTGCCCCGCCTGGGGAGTACGGCCGCAAGGCTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCAGCGGAGCATGTGGTTTAATTCGACGCAACGCGAAGAACCTTACCTGGGCTTGACATGTTCCTGACCGCCGTGGAAACACGGCTTCCCTTCGGGGCAGGATCACAGGTGGTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG    "Solirubrobacterales"
+                                                                                                                                                                                                                                                                                                                Family                
+GTAGTCCACGCCGTAAACGATGGATGCTAGCCGTTGGTCAGCTTGCTGAGCAGTGGCGCAGTTAACGCTTTAAGCATCCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCAGCTTTTGACATGTCTCGTATGGTCGCCAGAGATGGCTTCCTTCAGTTCGGCTGGCGAGAACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG "Beijerinckiaceae"    
+GTAGTCCACGCCCTAAACGATGGATGCTAGCCGTTAGGCAGCTTGCTGCTTAGTGGCGCAGTTAACGCTTTAAGCATCCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCAGCTTTTGACATGTCCGGTATGGGTTCCAGAGATGGGATCCTTCAGTTCGGCTGGCCGGAACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG "Beijerinckiaceae"    
+GTAGTCCACGCCGTAAACGGTGGGTACTAGGTGTGGGTTTCCTTCCTTGGGATCCGTGCCGTAGCTAACGCATTAAGTACCCCGCCTGGGGAGTACGGCCGCAAGGCTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGCGGAGCATGTGGATTAATTCGATGCAACGCGAAGAACCTTACCTGGGTTTGACATGCACAGGACGCCGGTAGAGATATCGGTTCCCTTGTGGTCTGTGTGCAGGTGGTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG    "Mycobacteriaceae"    
+GTAGTCCACGCTGTAAACGATGAGAGCTAGTTGTCGGCACGCATGCGTGTCGGTGACGCAGCTAACGCATTAAGCTCTCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCACCTTTTGACATGTCCGGACAACTCCAGAGATGGAGCTTTCCCTTCGGGGACTGGAACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG     "Caulobacteraceae"    
+GTAGTCCACGCTGTAAACGATGAGTGCTAGTTGTCGGCGGGCATGCCCGTCGGTGACGCAGCTAACGCATTAAGCACTCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCACCTTTTGACATGCCTGGACCGCACCGGAGACGGTGCTTTCCCTTCGGGGACTGGGACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG     "Caulobacteraceae"    
+GTAGTCCACGCTGTAAACGATGGGCACTAGGTGTGGGGGGTGTCGACTCCCTCCGTGCCGACGCTAACGCATTAAGTGCCCCGCCTGGGGAGTACGGCCGCAAGGCTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCAGCGGAGCATGTGGTTTAATTCGACGCAACGCGAAGAACCTTACCTGGGCTTGACATGTTCCTGACCGCCGTGGAAACACGGCTTCCCTTCGGGGCAGGATCACAGGTGGTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG    "Solirubrobacteraceae"
+                                                                                                                                                                                                                                                                                                                Genus          
+GTAGTCCACGCCGTAAACGATGGATGCTAGCCGTTGGTCAGCTTGCTGAGCAGTGGCGCAGTTAACGCTTTAAGCATCCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCAGCTTTTGACATGTCTCGTATGGTCGCCAGAGATGGCTTCCTTCAGTTCGGCTGGCGAGAACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG "Methylocella" 
+GTAGTCCACGCCCTAAACGATGGATGCTAGCCGTTAGGCAGCTTGCTGCTTAGTGGCGCAGTTAACGCTTTAAGCATCCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCAGCTTTTGACATGTCCGGTATGGGTTCCAGAGATGGGATCCTTCAGTTCGGCTGGCCGGAACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG "Methylocella" 
+GTAGTCCACGCCGTAAACGGTGGGTACTAGGTGTGGGTTTCCTTCCTTGGGATCCGTGCCGTAGCTAACGCATTAAGTACCCCGCCTGGGGAGTACGGCCGCAAGGCTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGCGGAGCATGTGGATTAATTCGATGCAACGCGAAGAACCTTACCTGGGTTTGACATGCACAGGACGCCGGTAGAGATATCGGTTCCCTTGTGGTCTGTGTGCAGGTGGTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG    "Mycobacterium"
+GTAGTCCACGCTGTAAACGATGAGAGCTAGTTGTCGGCACGCATGCGTGTCGGTGACGCAGCTAACGCATTAAGCTCTCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCACCTTTTGACATGTCCGGACAACTCCAGAGATGGAGCTTTCCCTTCGGGGACTGGAACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG     NA             
+GTAGTCCACGCTGTAAACGATGAGTGCTAGTTGTCGGCGGGCATGCCCGTCGGTGACGCAGCTAACGCATTAAGCACTCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCACCTTTTGACATGCCTGGACCGCACCGGAGACGGTGCTTTCCCTTCGGGGACTGGGACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG     NA             
+GTAGTCCACGCTGTAAACGATGGGCACTAGGTGTGGGGGGTGTCGACTCCCTCCGTGCCGACGCTAACGCATTAAGTGCCCCGCCTGGGGAGTACGGCCGCAAGGCTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCAGCGGAGCATGTGGTTTAATTCGACGCAACGCGAAGAACCTTACCTGGGCTTGACATGTTCCTGACCGCCGTGGAAACACGGCTTCCCTTCGGGGCAGGATCACAGGTGGTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG    "Conexibacter" 
+> taxa_16Ssp <- addSpecies(taxa_16S,"~/Documents/Master Tesis/16S_Analysis_NEW/silva_species_assignment_v138.1.fa.gz") 
+> head(taxa_16Ssp)
+                                                                                                                                                                                                                                                                                                                Kingdom   
+GTAGTCCACGCCGTAAACGATGGATGCTAGCCGTTGGTCAGCTTGCTGAGCAGTGGCGCAGTTAACGCTTTAAGCATCCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCAGCTTTTGACATGTCTCGTATGGTCGCCAGAGATGGCTTCCTTCAGTTCGGCTGGCGAGAACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG "Bacteria"
+GTAGTCCACGCCCTAAACGATGGATGCTAGCCGTTAGGCAGCTTGCTGCTTAGTGGCGCAGTTAACGCTTTAAGCATCCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCAGCTTTTGACATGTCCGGTATGGGTTCCAGAGATGGGATCCTTCAGTTCGGCTGGCCGGAACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG "Bacteria"
+GTAGTCCACGCCGTAAACGGTGGGTACTAGGTGTGGGTTTCCTTCCTTGGGATCCGTGCCGTAGCTAACGCATTAAGTACCCCGCCTGGGGAGTACGGCCGCAAGGCTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGCGGAGCATGTGGATTAATTCGATGCAACGCGAAGAACCTTACCTGGGTTTGACATGCACAGGACGCCGGTAGAGATATCGGTTCCCTTGTGGTCTGTGTGCAGGTGGTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG    "Bacteria"
+GTAGTCCACGCTGTAAACGATGAGAGCTAGTTGTCGGCACGCATGCGTGTCGGTGACGCAGCTAACGCATTAAGCTCTCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCACCTTTTGACATGTCCGGACAACTCCAGAGATGGAGCTTTCCCTTCGGGGACTGGAACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG     "Bacteria"
+GTAGTCCACGCTGTAAACGATGAGTGCTAGTTGTCGGCGGGCATGCCCGTCGGTGACGCAGCTAACGCATTAAGCACTCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCACCTTTTGACATGCCTGGACCGCACCGGAGACGGTGCTTTCCCTTCGGGGACTGGGACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG     "Bacteria"
+GTAGTCCACGCTGTAAACGATGGGCACTAGGTGTGGGGGGTGTCGACTCCCTCCGTGCCGACGCTAACGCATTAAGTGCCCCGCCTGGGGAGTACGGCCGCAAGGCTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCAGCGGAGCATGTGGTTTAATTCGACGCAACGCGAAGAACCTTACCTGGGCTTGACATGTTCCTGACCGCCGTGGAAACACGGCTTCCCTTCGGGGCAGGATCACAGGTGGTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG    "Bacteria"
+                                                                                                                                                                                                                                                                                                                Phylum            
+GTAGTCCACGCCGTAAACGATGGATGCTAGCCGTTGGTCAGCTTGCTGAGCAGTGGCGCAGTTAACGCTTTAAGCATCCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCAGCTTTTGACATGTCTCGTATGGTCGCCAGAGATGGCTTCCTTCAGTTCGGCTGGCGAGAACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG "Proteobacteria"  
+GTAGTCCACGCCCTAAACGATGGATGCTAGCCGTTAGGCAGCTTGCTGCTTAGTGGCGCAGTTAACGCTTTAAGCATCCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCAGCTTTTGACATGTCCGGTATGGGTTCCAGAGATGGGATCCTTCAGTTCGGCTGGCCGGAACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG "Proteobacteria"  
+GTAGTCCACGCCGTAAACGGTGGGTACTAGGTGTGGGTTTCCTTCCTTGGGATCCGTGCCGTAGCTAACGCATTAAGTACCCCGCCTGGGGAGTACGGCCGCAAGGCTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGCGGAGCATGTGGATTAATTCGATGCAACGCGAAGAACCTTACCTGGGTTTGACATGCACAGGACGCCGGTAGAGATATCGGTTCCCTTGTGGTCTGTGTGCAGGTGGTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG    "Actinobacteriota"
+GTAGTCCACGCTGTAAACGATGAGAGCTAGTTGTCGGCACGCATGCGTGTCGGTGACGCAGCTAACGCATTAAGCTCTCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCACCTTTTGACATGTCCGGACAACTCCAGAGATGGAGCTTTCCCTTCGGGGACTGGAACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG     "Proteobacteria"  
+GTAGTCCACGCTGTAAACGATGAGTGCTAGTTGTCGGCGGGCATGCCCGTCGGTGACGCAGCTAACGCATTAAGCACTCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCACCTTTTGACATGCCTGGACCGCACCGGAGACGGTGCTTTCCCTTCGGGGACTGGGACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG     "Proteobacteria"  
+GTAGTCCACGCTGTAAACGATGGGCACTAGGTGTGGGGGGTGTCGACTCCCTCCGTGCCGACGCTAACGCATTAAGTGCCCCGCCTGGGGAGTACGGCCGCAAGGCTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCAGCGGAGCATGTGGTTTAATTCGACGCAACGCGAAGAACCTTACCTGGGCTTGACATGTTCCTGACCGCCGTGGAAACACGGCTTCCCTTCGGGGCAGGATCACAGGTGGTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG    "Actinobacteriota"
+                                                                                                                                                                                                                                                                                                                Class                
+GTAGTCCACGCCGTAAACGATGGATGCTAGCCGTTGGTCAGCTTGCTGAGCAGTGGCGCAGTTAACGCTTTAAGCATCCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCAGCTTTTGACATGTCTCGTATGGTCGCCAGAGATGGCTTCCTTCAGTTCGGCTGGCGAGAACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG "Alphaproteobacteria"
+GTAGTCCACGCCCTAAACGATGGATGCTAGCCGTTAGGCAGCTTGCTGCTTAGTGGCGCAGTTAACGCTTTAAGCATCCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCAGCTTTTGACATGTCCGGTATGGGTTCCAGAGATGGGATCCTTCAGTTCGGCTGGCCGGAACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG "Alphaproteobacteria"
+GTAGTCCACGCCGTAAACGGTGGGTACTAGGTGTGGGTTTCCTTCCTTGGGATCCGTGCCGTAGCTAACGCATTAAGTACCCCGCCTGGGGAGTACGGCCGCAAGGCTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGCGGAGCATGTGGATTAATTCGATGCAACGCGAAGAACCTTACCTGGGTTTGACATGCACAGGACGCCGGTAGAGATATCGGTTCCCTTGTGGTCTGTGTGCAGGTGGTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG    "Actinobacteria"     
+GTAGTCCACGCTGTAAACGATGAGAGCTAGTTGTCGGCACGCATGCGTGTCGGTGACGCAGCTAACGCATTAAGCTCTCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCACCTTTTGACATGTCCGGACAACTCCAGAGATGGAGCTTTCCCTTCGGGGACTGGAACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG     "Alphaproteobacteria"
+GTAGTCCACGCTGTAAACGATGAGTGCTAGTTGTCGGCGGGCATGCCCGTCGGTGACGCAGCTAACGCATTAAGCACTCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCACCTTTTGACATGCCTGGACCGCACCGGAGACGGTGCTTTCCCTTCGGGGACTGGGACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG     "Alphaproteobacteria"
+GTAGTCCACGCTGTAAACGATGGGCACTAGGTGTGGGGGGTGTCGACTCCCTCCGTGCCGACGCTAACGCATTAAGTGCCCCGCCTGGGGAGTACGGCCGCAAGGCTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCAGCGGAGCATGTGGTTTAATTCGACGCAACGCGAAGAACCTTACCTGGGCTTGACATGTTCCTGACCGCCGTGGAAACACGGCTTCCCTTCGGGGCAGGATCACAGGTGGTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG    "Thermoleophilia"    
+                                                                                                                                                                                                                                                                                                                Order                
+GTAGTCCACGCCGTAAACGATGGATGCTAGCCGTTGGTCAGCTTGCTGAGCAGTGGCGCAGTTAACGCTTTAAGCATCCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCAGCTTTTGACATGTCTCGTATGGTCGCCAGAGATGGCTTCCTTCAGTTCGGCTGGCGAGAACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG "Rhizobiales"        
+GTAGTCCACGCCCTAAACGATGGATGCTAGCCGTTAGGCAGCTTGCTGCTTAGTGGCGCAGTTAACGCTTTAAGCATCCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCAGCTTTTGACATGTCCGGTATGGGTTCCAGAGATGGGATCCTTCAGTTCGGCTGGCCGGAACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG "Rhizobiales"        
+GTAGTCCACGCCGTAAACGGTGGGTACTAGGTGTGGGTTTCCTTCCTTGGGATCCGTGCCGTAGCTAACGCATTAAGTACCCCGCCTGGGGAGTACGGCCGCAAGGCTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGCGGAGCATGTGGATTAATTCGATGCAACGCGAAGAACCTTACCTGGGTTTGACATGCACAGGACGCCGGTAGAGATATCGGTTCCCTTGTGGTCTGTGTGCAGGTGGTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG    "Corynebacteriales"  
+GTAGTCCACGCTGTAAACGATGAGAGCTAGTTGTCGGCACGCATGCGTGTCGGTGACGCAGCTAACGCATTAAGCTCTCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCACCTTTTGACATGTCCGGACAACTCCAGAGATGGAGCTTTCCCTTCGGGGACTGGAACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG     "Caulobacterales"    
+GTAGTCCACGCTGTAAACGATGAGTGCTAGTTGTCGGCGGGCATGCCCGTCGGTGACGCAGCTAACGCATTAAGCACTCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCACCTTTTGACATGCCTGGACCGCACCGGAGACGGTGCTTTCCCTTCGGGGACTGGGACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG     "Caulobacterales"    
+GTAGTCCACGCTGTAAACGATGGGCACTAGGTGTGGGGGGTGTCGACTCCCTCCGTGCCGACGCTAACGCATTAAGTGCCCCGCCTGGGGAGTACGGCCGCAAGGCTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCAGCGGAGCATGTGGTTTAATTCGACGCAACGCGAAGAACCTTACCTGGGCTTGACATGTTCCTGACCGCCGTGGAAACACGGCTTCCCTTCGGGGCAGGATCACAGGTGGTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG    "Solirubrobacterales"
+                                                                                                                                                                                                                                                                                                                Family                
+GTAGTCCACGCCGTAAACGATGGATGCTAGCCGTTGGTCAGCTTGCTGAGCAGTGGCGCAGTTAACGCTTTAAGCATCCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCAGCTTTTGACATGTCTCGTATGGTCGCCAGAGATGGCTTCCTTCAGTTCGGCTGGCGAGAACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG "Beijerinckiaceae"    
+GTAGTCCACGCCCTAAACGATGGATGCTAGCCGTTAGGCAGCTTGCTGCTTAGTGGCGCAGTTAACGCTTTAAGCATCCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCAGCTTTTGACATGTCCGGTATGGGTTCCAGAGATGGGATCCTTCAGTTCGGCTGGCCGGAACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG "Beijerinckiaceae"    
+GTAGTCCACGCCGTAAACGGTGGGTACTAGGTGTGGGTTTCCTTCCTTGGGATCCGTGCCGTAGCTAACGCATTAAGTACCCCGCCTGGGGAGTACGGCCGCAAGGCTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGCGGAGCATGTGGATTAATTCGATGCAACGCGAAGAACCTTACCTGGGTTTGACATGCACAGGACGCCGGTAGAGATATCGGTTCCCTTGTGGTCTGTGTGCAGGTGGTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG    "Mycobacteriaceae"    
+GTAGTCCACGCTGTAAACGATGAGAGCTAGTTGTCGGCACGCATGCGTGTCGGTGACGCAGCTAACGCATTAAGCTCTCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCACCTTTTGACATGTCCGGACAACTCCAGAGATGGAGCTTTCCCTTCGGGGACTGGAACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG     "Caulobacteraceae"    
+GTAGTCCACGCTGTAAACGATGAGTGCTAGTTGTCGGCGGGCATGCCCGTCGGTGACGCAGCTAACGCATTAAGCACTCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCACCTTTTGACATGCCTGGACCGCACCGGAGACGGTGCTTTCCCTTCGGGGACTGGGACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG     "Caulobacteraceae"    
+GTAGTCCACGCTGTAAACGATGGGCACTAGGTGTGGGGGGTGTCGACTCCCTCCGTGCCGACGCTAACGCATTAAGTGCCCCGCCTGGGGAGTACGGCCGCAAGGCTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCAGCGGAGCATGTGGTTTAATTCGACGCAACGCGAAGAACCTTACCTGGGCTTGACATGTTCCTGACCGCCGTGGAAACACGGCTTCCCTTCGGGGCAGGATCACAGGTGGTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG    "Solirubrobacteraceae"
+                                                                                                                                                                                                                                                                                                                Genus          
+GTAGTCCACGCCGTAAACGATGGATGCTAGCCGTTGGTCAGCTTGCTGAGCAGTGGCGCAGTTAACGCTTTAAGCATCCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCAGCTTTTGACATGTCTCGTATGGTCGCCAGAGATGGCTTCCTTCAGTTCGGCTGGCGAGAACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG "Methylocella" 
+GTAGTCCACGCCCTAAACGATGGATGCTAGCCGTTAGGCAGCTTGCTGCTTAGTGGCGCAGTTAACGCTTTAAGCATCCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCAGCTTTTGACATGTCCGGTATGGGTTCCAGAGATGGGATCCTTCAGTTCGGCTGGCCGGAACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG "Methylocella" 
+GTAGTCCACGCCGTAAACGGTGGGTACTAGGTGTGGGTTTCCTTCCTTGGGATCCGTGCCGTAGCTAACGCATTAAGTACCCCGCCTGGGGAGTACGGCCGCAAGGCTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGCGGAGCATGTGGATTAATTCGATGCAACGCGAAGAACCTTACCTGGGTTTGACATGCACAGGACGCCGGTAGAGATATCGGTTCCCTTGTGGTCTGTGTGCAGGTGGTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG    "Mycobacterium"
+GTAGTCCACGCTGTAAACGATGAGAGCTAGTTGTCGGCACGCATGCGTGTCGGTGACGCAGCTAACGCATTAAGCTCTCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCACCTTTTGACATGTCCGGACAACTCCAGAGATGGAGCTTTCCCTTCGGGGACTGGAACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG     NA             
+GTAGTCCACGCTGTAAACGATGAGTGCTAGTTGTCGGCGGGCATGCCCGTCGGTGACGCAGCTAACGCATTAAGCACTCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCACCTTTTGACATGCCTGGACCGCACCGGAGACGGTGCTTTCCCTTCGGGGACTGGGACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG     NA             
+GTAGTCCACGCTGTAAACGATGGGCACTAGGTGTGGGGGGTGTCGACTCCCTCCGTGCCGACGCTAACGCATTAAGTGCCCCGCCTGGGGAGTACGGCCGCAAGGCTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCAGCGGAGCATGTGGTTTAATTCGACGCAACGCGAAGAACCTTACCTGGGCTTGACATGTTCCTGACCGCCGTGGAAACACGGCTTCCCTTCGGGGCAGGATCACAGGTGGTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG    "Conexibacter" 
+                                                                                                                                                                                                                                                                                                                Species     
+GTAGTCCACGCCGTAAACGATGGATGCTAGCCGTTGGTCAGCTTGCTGAGCAGTGGCGCAGTTAACGCTTTAAGCATCCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCAGCTTTTGACATGTCTCGTATGGTCGCCAGAGATGGCTTCCTTCAGTTCGGCTGGCGAGAACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG NA          
+GTAGTCCACGCCCTAAACGATGGATGCTAGCCGTTAGGCAGCTTGCTGCTTAGTGGCGCAGTTAACGCTTTAAGCATCCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCAGCTTTTGACATGTCCGGTATGGGTTCCAGAGATGGGATCCTTCAGTTCGGCTGGCCGGAACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG NA          
+GTAGTCCACGCCGTAAACGGTGGGTACTAGGTGTGGGTTTCCTTCCTTGGGATCCGTGCCGTAGCTAACGCATTAAGTACCCCGCCTGGGGAGTACGGCCGCAAGGCTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGCGGAGCATGTGGATTAATTCGATGCAACGCGAAGAACCTTACCTGGGTTTGACATGCACAGGACGCCGGTAGAGATATCGGTTCCCTTGTGGTCTGTGTGCAGGTGGTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG    "paraterrae"
+GTAGTCCACGCTGTAAACGATGAGAGCTAGTTGTCGGCACGCATGCGTGTCGGTGACGCAGCTAACGCATTAAGCTCTCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCACCTTTTGACATGTCCGGACAACTCCAGAGATGGAGCTTTCCCTTCGGGGACTGGAACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG     NA          
+GTAGTCCACGCTGTAAACGATGAGTGCTAGTTGTCGGCGGGCATGCCCGTCGGTGACGCAGCTAACGCATTAAGCACTCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGCAGAACCTTACCACCTTTTGACATGCCTGGACCGCACCGGAGACGGTGCTTTCCCTTCGGGGACTGGGACACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG     NA          
+GTAGTCCACGCTGTAAACGATGGGCACTAGGTGTGGGGGGTGTCGACTCCCTCCGTGCCGACGCTAACGCATTAAGTGCCCCGCCTGGGGAGTACGGCCGCAAGGCTAAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCAGCGGAGCATGTGGTTTAATTCGACGCAACGCGAAGAACCTTACCTGGGCTTGACATGTTCCTGACCGCCGTGGAAACACGGCTTCCCTTCGGGGCAGGATCACAGGTGGTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG    NA   
+
+> saveRDS(seqtab.nochim,"~/Documents/Master Tesis/16S_Analysis_NEW/16S_seqtab.rds")
+> ###check class and dimension of the OTU matrix
+> str(seqtab.nochim)
+ int [1:122, 1:16189] 0 174 254 444 713 410 475 928 600 350 ...
+ - attr(*, "dimnames")=List of 2
+  ..$ : chr [1:122] "16S-BLANCO1" "16S-BLANCO2" "16S-MEC-01-1" "16S-MEC-01-2" ... ...
+> write.csv(seqtab.nochim, "~/Documents/Master Tesis/16S_Analysis_NEW/seqtab.nochin.csv")
+> ###check class and dimension of the taxa table
+> str(taxa_16Ssp)
+ chr [1:16189, 1:7] "Bacteria" "Bacteria" "Bacteria" "Bacteria" "Bacteria" "Bacteria" "Bacteria" "Bacteria" ...
+ - attr(*, "dimnames")=List of 2
+  ..$ : chr [1:16189] "GTAGTCCACGCCGTAAACGATGGATGCTAGCCGTTGGTCAGCTTGCTGAGCAGTGGCGCAGTTAACGCTTTAAGCATCCCGCCTGGGGAGTACGGTCGCAAGATTAAAACT"| __truncated__ "GTAGTCCACGCCCTAAACGATGGATGCTAGCCGTTAGGCAGCTTGCTGCTTAGTGGCGCAGTTAACGCTTTAAGCATCCCGCCTGGGGAGTACGGTCGCAAGATTAAAACT"| __truncated__ "GTAGTCCACGCCGTAAACGGTGGGTACTAGGTGTGGGTTTCCTTCCTTGGGATCCGTGCCGTAGCTAACGCATTAAGTACCCCGCCTGGGGAGTACGGCCGCAAGGCTAAA"| __truncated__ "GTAGTCCACGCTGTAAACGATGAGAGCTAGTTGTCGGCACGCATGCGTGTCGGTGACGCAGCTAACGCATTAAGCTCTCCGCCTGGGGAGTACGGTCGCAAGATTAAAACT"| __truncated__ ...
+  ..$ : chr [1:7] "Kingdom" "Phylum" "Class" "Order" ...
+> class(taxa_16Ssp)
+[1] "matrix" "array" 
