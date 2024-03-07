@@ -362,10 +362,11 @@ table(tax_table(bacteria.ps.dataset.prev)[, "Family"], exclude = NULL)
 #number of taxa excluded after filtering
 ntaxa(bacteria.ps.norm.decont)-ntaxa(bacteria.ps.dataset.prev)
 
-#prune OTUs that are not present in at least one sample
+#prune OTUs that are not present in at least one sample (FILTRAR CON FILTRO MÁS FUERTE- MENOS 20% DE MUESTRA-KRISTIN ENVÍA SCRIPT)
 ps.prev.exclude = prune_taxa(taxa_sums(bacteria.ps.dataset.prev) > 0, bacteria.ps.dataset.prev)
 ntaxa(ps.prev.exclude)
 
+DESPUES DE FILTRAR TENGO QUE VERIFICAR (SCRIPT ENVIADO POR KRISTIN)
 ##All taxa are present in at least one sample
 
 #Save the new dataset in a clean phyloseq object and in dataframe
@@ -379,7 +380,7 @@ saveRDS(bacteria.ps.dataset, "bacteria_ps_dataset_Jan20_nifH.rds")
 bacteria.ps.dataset = readRDS("bacteria_ps_dataset_Jan20_nifH.rds")
 refseq(bacteria.ps.dataset)
 
-#### DESEQ2 ####
+#### DESEQ2 #### (INTENTAR ESTA PARTE EN EL LINK QUE KRISTIN ENVIÓ)
 bacteria.ps.norm.decont
 
 View(sample_data(bacteria.ps.dataset))
@@ -394,8 +395,9 @@ hist(sample_sums(bacteria.ps.dataset), breaks = 100)
 bacteria.ps.dataset.norm <- prune_samples(sample_sums(bacteria.ps.dataset) > 100, bacteria.ps.dataset)
 sample_sums(bacteria.ps.dataset.norm)
 hist(sample_sums(bacteria.ps.dataset.norm), breaks = 100)
-
 (sample_sums(bacteria.ps.dataset) > 100) == TRUE
+
+
 #
 #
 #
@@ -509,8 +511,10 @@ sigtab$Family = factor(as.character(sigtab$Family), levels = names(x))
 ggplot(sigtab, aes(x=Family, y=log2FoldChange, color=Phylum)) + geom_point(size=6) + 
   theme(axis.text.x = element_text(angle = -90, hjust = 0, vjust = 0.5))
 
-#rarefied samples to even sequencing depth
-bacteria.ps.dataset
+
+#rarefied samples to even sequencing depth (AQUÍ)
+
+bacteria.ps.dataset (INTENTAR UN BOX PLOT CON LOS FACTORES A CONSIDERAR)
 richness.df = estimate_richness(bacteria.ps.dataset.norm, split = TRUE, measures = c("Observed","Shannon","Simpson","Chao1"))
 richness.df$readcount = sample_sums(bacteria.ps.dataset.norm)
 str(richness.df)
