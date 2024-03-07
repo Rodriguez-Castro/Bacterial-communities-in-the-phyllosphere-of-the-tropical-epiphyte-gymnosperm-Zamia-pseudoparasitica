@@ -1,0 +1,573 @@
+
+
+
+
+
+> ###Build phyloseq object (excluding the phylogenetic tree)
+> bacteria.ps <- phyloseq(otu_table(otu.table_t, taxa_are_rows = TRUE),
++                         sample_data(metadata_16S),
++                         tax_table(taxa_16Ssp))
+> bacteria.ps
+phyloseq-class experiment-level object
+otu_table()   OTU Table:         [ 16189 taxa and 117 samples ]
+sample_data() Sample Data:       [ 117 samples by 30 sample variables ]
+tax_table()   Taxonomy Table:    [ 16189 taxa by 7 taxonomic ranks ]
+
+sample_data(bacteria.ps)
+
+#exclude uncertain samples
+> bacteria.ps = subset_samples(bacteria.ps, bacteria.ps@sam_data$Date.of.extraction != "Exclude")
+> ##store the DNA sequences of our ASVs in the refseq slot
+> dna <- Biostrings::DNAStringSet(taxa_names(bacteria.ps))
+> names(dna) <- taxa_names(bacteria.ps)
+> bacteria.ps <- merge_phyloseq(bacteria.ps, dna)
+> taxa_names(bacteria.ps) <- paste0("ASV", seq(ntaxa(bacteria.ps)))
+> bacteria.ps
+phyloseq-class experiment-level object
+otu_table()   OTU Table:         [ 16189 taxa and 117 samples ]
+sample_data() Sample Data:       [ 117 samples by 30 sample variables ]
+tax_table()   Taxonomy Table:    [ 16189 taxa by 7 taxonomic ranks ]
+refseq()      DNAStringSet:      [ 16189 reference sequences ]
+> refseq(bacteria.ps)
+DNAStringSet object of length 16189:
+        width seq                                                                                     names               
+    [1]   303 GTAGTCCACGCCGTAAACGATGGATGCTAGCCGTTGGTCAGC...GCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG ASV1
+    [2]   303 GTAGTCCACGCCCTAAACGATGGATGCTAGCCGTTAGGCAGC...GCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG ASV2
+    [3]   300 GTAGTCCACGCCGTAAACGGTGGGTACTAGGTGTGGGTTTCC...GCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG ASV3
+    [4]   299 GTAGTCCACGCTGTAAACGATGAGAGCTAGTTGTCGGCACGC...GCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG ASV4
+    [5]   299 GTAGTCCACGCTGTAAACGATGAGTGCTAGTTGTCGGCGGGC...GCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG ASV5
+    ...   ... ...
+[16185]   357 TTAGTCCACGCTGTCAACTATGAAGATTCACTATCAGATTAG...GCTGTCGTCAGCTCGTGTCGTGAGATTTTTGGTTAAGTTCTT ASV16185
+[16186]   300 GTAGTCCTAGCCCTAAACGATGATTGCTTGATGTGGCCGGTA...GCTGTCGTCAGCTCGTGTCTTGAGACGTTGGGTTAAGTCCTC ASV16186
+[16187]   403 GTAGTCCATGCTGTAAACGATGAGTGTTCGTTCTTGGTCTAC...GCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG ASV16187
+[16188]   298 GTAGTCCACGCCGTAAACGATGAATGCCAGCTGTTGGGGTGC...GCTGTCGTCAGCTCGTGTCTTGAGACGTTGGGTTAAGTCCTC ASV16188
+[16189]   302 GTAATCCACGCCGTAAACGATGTCGACTCGGGATGTGGTTGC...GCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG ASV16189
+> ###### TAXONOMIC FILTERING ########
+> # Show available ranks in the dataset
+> rank_names(bacteria.ps)
+[1] "Kingdom" "Phylum"  "Class"   "Order"   "Family"  "Genus"   "Species"
+> # Filter non bacteria ASV
+> head(tax_table(bacteria.ps), 10)
+Taxonomy Table:     [10 taxa by 7 taxonomic ranks]:
+      Kingdom    Phylum             Class                 Order                 Family                 Genus           
+ASV1  "Bacteria" "Proteobacteria"   "Alphaproteobacteria" "Rhizobiales"         "Beijerinckiaceae"     "Methylocella"  
+ASV2  "Bacteria" "Proteobacteria"   "Alphaproteobacteria" "Rhizobiales"         "Beijerinckiaceae"     "Methylocella"  
+ASV3  "Bacteria" "Actinobacteriota" "Actinobacteria"      "Corynebacteriales"   "Mycobacteriaceae"     "Mycobacterium" 
+ASV4  "Bacteria" "Proteobacteria"   "Alphaproteobacteria" "Caulobacterales"     "Caulobacteraceae"     NA              
+ASV5  "Bacteria" "Proteobacteria"   "Alphaproteobacteria" "Caulobacterales"     "Caulobacteraceae"     NA              
+ASV6  "Bacteria" "Actinobacteriota" "Thermoleophilia"     "Solirubrobacterales" "Solirubrobacteraceae" "Conexibacter"  
+ASV7  "Bacteria" "Actinobacteriota" "Actinobacteria"      "Frankiales"          "Acidothermaceae"      "Acidothermus"  
+ASV8  "Bacteria" "Actinobacteriota" "Actinobacteria"      "Pseudonocardiales"   "Pseudonocardiaceae"   "Pseudonocardia"
+ASV9  "Bacteria" "Proteobacteria"   "Alphaproteobacteria" "Rhizobiales"         "Beijerinckiaceae"     "1174-901-12"   
+ASV10 "Bacteria" "Actinobacteriota" "Actinobacteria"      "Frankiales"          "Acidothermaceae"      "Acidothermus"  
+      Species     
+ASV1  NA          
+ASV2  NA          
+ASV3  "paraterrae"
+ASV4  NA          
+ASV5  NA          
+ASV6  NA          
+ASV7  NA          
+ASV8  NA          
+ASV9  NA          
+ASV10 NA                   
+> bacteria.ps.filter1 = subset_taxa(bacteria.ps, Kingdom == "Bacteria")
+> bacteria.ps.filter1
+phyloseq-class experiment-level object
+otu_table()   OTU Table:         [ 16172 taxa and 117 samples ]
+sample_data() Sample Data:       [ 117 samples by 30 sample variables ]
+tax_table()   Taxonomy Table:    [ 16172 taxa by 7 taxonomic ranks ]
+refseq()      DNAStringSet:      [ 16172 reference sequences ]
+> ntaxa(bacteria.ps)
+[1] 16189
+> ntaxa(bacteria.ps)-ntaxa(bacteria.ps.filter1)
+[1] 17
+
+#### Note: By looking at the number of taxa in the OTU table before and after filtering,
+# We can see that all the sequences correspond to the bacteria kingdom.
+
+
+## The following ensures that features with ambiguous phylum annotation 
+## are also removed. Also, chloroplast and mitocondria are removed
+
+> bacteria.ps.filter2 <- subset_taxa(bacteria.ps.filter1, !is.na(Phylum) & !Order %in% c("Chloroplast")
++                                    & !Family %in% c("Mitochondria"))
+> bacteria.ps.filter2
+phyloseq-class experiment-level object
+otu_table()   OTU Table:         [ 15061 taxa and 117 samples ]
+sample_data() Sample Data:       [ 117 samples by 30 sample variables ]
+tax_table()   Taxonomy Table:    [ 15061 taxa by 7 taxonomic ranks ]
+refseq()      DNAStringSet:      [ 15061 reference sequences ]
+
+> ## check how many sequences were filter out from our raw dataset
+> ntaxa(bacteria.ps.filter2)
+[1] 15061
+> plastids = ntaxa(bacteria.ps.filter1)-ntaxa(bacteria.ps.filter2)
+> plastids #correspond to chloroplast and mitochrondia sequences
+[1] 1111
+
+> ##create table, number of features for each phyla
+> phylum = table(tax_table(bacteria.ps.filter2)[, "Phylum"], exclude = NULL)
+> table(tax_table(bacteria.ps.filter2)[, "Phylum"], exclude = NULL)
+
+            Abditibacteriota              Acidobacteriota             Actinobacteriota               Armatimonadota 
+                          11                          883                         2281                          197 
+                Bacteroidota             Bdellovibrionota                  Chloroflexi                Cyanobacteria 
+                        1865                          357                          663                           60 
+            Deferribacterota                 Deinococcota                 Dependentiae             Desulfobacterota 
+                           1                           95                           27                           27 
+             Elusimicrobiota            Entotheonellaeota                      FCPU426               Fibrobacterota 
+                          29                            1                            4                            4 
+                  Firmicutes               Fusobacteriota              Gemmatimonadota             Margulisbacteria 
+                         347                            5                          105                            2 
+                      MBNT15            Methylomirabilota                  Myxococcota                        NB1-j 
+                           2                            1                          507                            9 
+                Nitrospirota              Patescibacteria              Planctomycetota               Proteobacteria 
+                           6                          415                           50                         6807 
+                     RCP2-54 SAR324 clade(Marine group B)                Spirochaetota                  Sumerlaeota 
+                          12                           35                           16                            1 
+           Verrucomicrobiota                        WPS-2 
+                         221                           15 
+> ##Using the follwing script sintax list the phylum that have less than 10 OTUs in a dataframe
+> #This can be use automatically in the following filters
+> out.taxa = data.frame(phylum <10)
+> out.taxa$phylum = row.names(phylum)
+> out.taxaT = out.taxa == TRUE
+> table(out.taxaT)
+out.taxaT
+FALSE  TRUE 
+   57    11 
+> out.taxa=out.taxa[out.taxaT,]
+> out.taxa
+                  phylum...10            phylum
+Deferribacterota         TRUE  Deferribacterota
+Entotheonellaeota        TRUE Entotheonellaeota
+FCPU426                  TRUE           FCPU426
+Fibrobacterota           TRUE    Fibrobacterota
+Fusobacteriota           TRUE    Fusobacteriota
+Margulisbacteria         TRUE  Margulisbacteria
+MBNT15                   TRUE            MBNT15
+Methylomirabilota        TRUE Methylomirabilota
+NB1-j                    TRUE             NB1-j
+Nitrospirota             TRUE      Nitrospirota
+Sumerlaeota              TRUE       Sumerlaeota
+> #### Filter out phyllum with less than 10 OTUs
+> # filtering by automatically listing the phylum with less than 10 OTUs
+> bacteria.ps.filter3 <- subset_taxa(bacteria.ps.filter2, !Phylum %in% out.taxa$phylum)
+> table(tax_table(bacteria.ps.filter3)[,"Phylum"], exclude = NULL)
+
+                   Abditibacteriota              Acidobacteriota             Actinobacteriota               Armatimonadota 
+                          11                          883                         2281                          197 
+                Bacteroidota             Bdellovibrionota                  Chloroflexi                Cyanobacteria 
+                        1865                          357                          663                           60 
+                Deinococcota                 Dependentiae             Desulfobacterota              Elusimicrobiota 
+                          95                           27                           27                           29 
+                  Firmicutes              Gemmatimonadota                  Myxococcota              Patescibacteria 
+                         347                          105                          507                          415 
+             Planctomycetota               Proteobacteria                      RCP2-54 SAR324 clade(Marine group B) 
+                          50                         6807                           12                           35 
+               Spirochaetota            Verrucomicrobiota                        WPS-2 
+                          16                          221                           15 
+> ## Checking the amount of taxa filter out, and the proportion compare to the previous filter
+> ntaxa(bacteria.ps.filter3)
+[1] 15025
+> rare.otus = ntaxa(bacteria.ps.filter2)-ntaxa(bacteria.ps.filter3)
+> rare.otus #correspond to rare OTUs
+[1] 36
+> #### DECONTAMINATION ####
+> bacteria.ps.dataset = bacteria.ps.filter3
+> library(devtools); packageVersion("devtools")
+Loading required package: usethis
+
+Attaching package: ‘devtools’
+
+The following object is masked from ‘package:permute’:
+
+    check
+
+[1] ‘2.4.5’
+> library(phyloseq); packageVersion("phyloseq")
+[1] ‘1.46.0’
+> library(decontam); packageVersion("decontam")
+[1] ‘1.22.0’
+> #REMOVING NEGATIVE CONTROLS BECAUSE NO READS THROUGH
+> ## Exclude samples without any reads
+> bacteria.ps.dataset.norm <- prune_samples(sample_sums(bacteria.ps.dataset) > 50, bacteria.ps.dataset)
+> bacteria.ps.dataset
+phyloseq-class experiment-level object
+phyloseq-class experiment-level object
+otu_table()   OTU Table:         [ 15025 taxa and 117 samples ]
+sample_data() Sample Data:       [ 117 samples by 30 sample variables ]
+tax_table()   Taxonomy Table:    [ 15025 taxa by 7 taxonomic ranks ]
+refseq()      DNAStringSet:      [ 15025 reference sequences ]
+> bacteria.ps.dataset.norm
+phyloseq-class experiment-level object
+phyloseq-class experiment-level object
+otu_table()   OTU Table:         [ 15025 taxa and 117 samples ]
+sample_data() Sample Data:       [ 117 samples by 30 sample variables ]
+tax_table()   Taxonomy Table:    [ 15025 taxa by 7 taxonomic ranks ]
+refseq()      DNAStringSet:      [ 15025 reference sequences ]
+# inspect library sizes
+df <- as.data.frame(sample_data(bacteria.ps.dataset.norm)) #Put sample_data into a ggplot-friendly data.frame
+df$LibrarySize <- sample_sums(bacteria.ps.dataset.norm)
+df <- df[order(df$LibrarySize),]
+df$Index <- seq(nrow(df))
+head(df)
+ggplot(data=df, aes(x=Index, y=LibrarySize, color=Site)) +
+  geom_point()
+sample_data(bacteria.ps.dataset.norm)$isneg <- sample_data(bacteria.ps.dataset.norm)$Site == "neg"
+> ## FREQUENCE AND PREVALENCE - Identification des contaminants
+> # Method = "either" permet de faire les deux methodes simultanement
+> set.seed(420)
+> contam = isContaminant(bacteria.ps.dataset.norm, conc = "Conct_ng.ul", neg = "isneg", method = "both", threshold = c(0.5,0.5))
+> #Voir allure du resultat
+> head(contam, 10)
+             freq prev p.freq p.prev  p contaminant
+ASV1  0.026362166  109    0.5     NA NA       FALSE
+ASV2  0.011978236  109    0.5     NA NA       FALSE
+ASV3  0.012136292  104    0.5     NA NA       FALSE
+ASV4  0.010224631  113    0.5     NA NA       FALSE
+ASV5  0.009348141  108    0.5     NA NA       FALSE
+ASV6  0.009906463   70    0.5     NA NA       FALSE
+ASV7  0.009602095   98    0.5     NA NA       FALSE
+ASV8  0.009066478  107    0.5     NA NA       FALSE
+ASV9  0.007804475  108    0.5     NA NA       FALSE
+ASV10 0.008111951   96    0.5     NA NA       FALSE
+> #combien de contaminants
+> table(contam$contaminant)
+
+FALSE 
+FALSE 
+15025  
+> #voir les contaminants
+> which(contam$contaminant)
+integer(0)
+> ##Visualisation des contaminants
+> # Ne permet pas de retirer les contaminants!
+> # Frequence
+> plot_frequency(bacteria.ps.dataset.norm, taxa_names(bacteria.ps.dataset.norm)[c(1:9)], conc="Conct_ng.ul") + 
++   xlab("DNA.quantity_ng.ul")
+Warning message:
+In scale_y_log10(limits = c(NA, ifelse(normalize || all(plot_melt$DNA_conc <=  :
+  log-10 transformation introduced infinite values.
+> ## Retire les contaminants (Nouvel object phyloseq)
+> bacteria.ps.dataset.norm
+phyloseq-class experiment-level object
+otu_table()   OTU Table:         [ 15025 taxa and 117 samples ]
+sample_data() Sample Data:       [ 117 samples by 30 sample variables ]
+tax_table()   Taxonomy Table:    [ 15025 taxa by 7 taxonomic ranks ]
+refseq()      DNAStringSet:      [ 15025 reference sequences ]
+> bacteria.ps.norm.decont <- prune_taxa(!contam$contaminant, bacteria.ps.dataset.norm)
+> bacteria.ps.norm.decont
+phyloseq-class experiment-level object
+otu_table()   OTU Table:         [ 15025 taxa and 117 samples ]
+sample_data() Sample Data:       [ 117 samples by 30 sample variables ]
+tax_table()   Taxonomy Table:    [ 15025 taxa by 7 taxonomic ranks ]
+refseq()      DNAStringSet:      [ 15025 reference sequences ]
+> # Check the numer of reads per sample
+> sample_sums(bacteria.ps.norm.decont)
+ 16S-BLANCO1  16S-BLANCO2 16S-MEC-01-1 16S-MEC-01-2 16S-MEC-02-1 16S-MEC-02-2 16S-MEC-03-1 16S-MEC-03-2 16S-MEC-04-1 
+        3418        15004        13687        21973        15946         8493        17065        29709        18535 
+16S-MEC-04-2 16S-MEC-05-1 16S-MEC-05-2 16S-MEC-06-1 16S-MEC-07-1 16S-MEC-07-2 16S-MEC-08-1 16S-MEC-08-2 16S-MEC-09-1 
+       54794        15510        14508        16905        17875         8444        20266        15894        18173 
+16S-MEC-09-2 16S-MEC-10-1 16S-MEC-10-2 16S-MPS-01-1 16S-MPS-01-2 16S-MPS-02-1 16S-MPS-02-2 16S-MPS-03-1 16S-MPS-03-2 
+       17162        19200        15291        16728        19614        25004        23824        10988         6752 
+16S-MPS-04-1 16S-MPS-04-2 16S-MPS-05-1 16S-MPS-05-2 16S-MPS-06-1 16S-MPS-06-2 16S-MPS-07-1 16S-MPS-07-2 16S-MPS-08-2 
+       17316        13569        47543        35789        22187        15928        31216        41833        55320 
+16S-MPS-21-1 16S-MPS-21-2 16S-MPS-29-1 16S-MPS-29-2 16S-MSF-07-1 16S-MSF-07-2 16S-MSF-08-1 16S-MSF-08-2 16S-MSF-09-1 
+       36507        28396        39713        44973        13600        10874        19122        15015        19904 
+16S-MSF-09-2 16S-MSF-10-1 16S-MSF-10-2 16S-MSF-11-1 16S-MSF-11-2 16S-MSF-17-1 16S-MSF-17-2 16S-MSF-18-1 16S-MSF-18-2 
+        6382        22988        20169        13315        12492        16977        20048        14585        10502 
+16S-MSF-19-1 16S-MSF-21-1 16S-MSF-21-2 16S-MSF-22-1 16S-MSF-22-2 16S-OEC-01-1 16S-OEC-01-2 16S-OEC-02-1 16S-OEC-02-2 
+       19295        12083         4612        28707        13359        24731        17774        24560        16676 
+16S-OEC-03-1 16S-OEC-03-2 16S-OEC-04-1 16S-OEC-04-2 16S-OEC-05-1 16S-OEC-05-2 16S-OEC-06-1 16S-OEC-06-2 16S-OEC-07-1 
+       27441        20454        20457        22765        24821        21169        20934        18414        13419 
+16S-OEC-07-2 16S-OEC-08-1 16S-OEC-08-2 16S-OEC-09-1 16S-OEC-09-2 16S-OEC-10-1 16S-OEC-10-2 16S-OPS-01-1 16S-OPS-01-2 
+       19200        34517        24542        21810        20848        24710        17169        22169        10879 
+16S-OPS-02-2 16S-OPS-03-1 16S-OPS-03-2 16S-OPS-04-1 16S-OPS-04-2 16S-OPS-05-1 16S-OPS-05-2 16S-OPS-06-1 16S-OPS-06-2 
+       49674        14114        14217          979        14165        11552        29152        34022        24497 
+16S-OPS-07-1 16S-OPS-07-2 16S-OPS-08-1 16S-OPS-08-2 16S-OPS-21-1 16S-OPS-29-1 16S-OPS-29-2 16S-OSF-07-1 16S-OSF-07-2 
+       50855        51189        34407        49067        40875        16701        60638        11362        19196 
+16S-OSF-08-1 16S-OSF-08-2 16S-OSF-09-1 16S-OSF-09-2 16S-OSF-10-1 16S-OSF-10-2 16S-OSF-11-1 16S-OSF-11-2 16S-OSF-17-1 
+        7994        17962         3895         3519        15001        21802         8990        23548        18487 
+16S-OSF-17-2 16S-OSF-18-1 16S-OSF-18-2 16S-OSF-19-1 16S-OSF-19-2 16S-OSF-21-1 16S-OSF-21-2 16S-OSF-22-1 16S-OSF-22-2 
+       13974        16258        14295        11014        19831        19035        11027        15212        11610 
+> hist(sample_sums(bacteria.ps.norm.decont), main = "Histogram: Read Counts",
++      xlab = "Total Reads", border = "black", col = "yellow", las=1, breaks = 10)
+> ##Check the number of reads per taxa
+> head(taxa_sums(bacteria.ps.norm.decont),100)
+  ASV1   ASV2   ASV3   ASV4   ASV5   ASV6   ASV7   ASV8   ASV9  ASV10  ASV11  ASV12  ASV13  ASV14  ASV15  ASV16  ASV17 
+ 57913  27247  26492  23978  22575  22300  20890  20252  18292  17860  14582  13574  13769  13651  12501  13253  11629 
+ ASV18  ASV19  ASV20  ASV21  ASV23  ASV24  ASV25  ASV26  ASV27  ASV28  ASV29  ASV30  ASV31  ASV32  ASV33  ASV34  ASV35 
+ 11120  11238  10711   9640   9413   8533   8639   8509   8439   8223   8130   8294   8028   7917   7935   7961   7673 
+ ASV36  ASV37  ASV38  ASV39  ASV40  ASV41  ASV42  ASV43  ASV44  ASV45  ASV46  ASV47  ASV48  ASV49  ASV50  ASV51  ASV52 
+  7652   7551   7620   7567   7540   7511   7484   7606   7536   7475   7121   7166   7241   7180   6932   6726   7082 
+ ASV53  ASV54  ASV55  ASV56  ASV57  ASV58  ASV59  ASV60  ASV61  ASV62  ASV63  ASV64  ASV65  ASV66  ASV67  ASV68  ASV69 
+  6904   6614   6454   6179   6322   6154   6271   6381   6403   6156   6106   6202   6100   2259   5806   5883   5727 
+ ASV70  ASV71  ASV72  ASV73  ASV74  ASV75  ASV76  ASV77  ASV78  ASV79  ASV80  ASV81  ASV82  ASV83  ASV84  ASV85  ASV86 
+  5703   5715   5486   5677   5470   5276   5233   5343   5332   5314   5249   5311   5047   5142   4920   4942   5118 
+ ASV87  ASV88  ASV89  ASV90  ASV91  ASV92  ASV93  ASV94  ASV95  ASV96  ASV97  ASV98  ASV99 ASV100 ASV101 
+  2043   4896   4939   4856   4696   4685   4591   4774   4594   4409   4455   4647   4565   4511   4502 
+## Creation dun subset de phyloseq SANS negatif
+> bacteria.ps.norm.decont <- subset_samples(bacteria.ps.norm.decont, Site != "neg")
+> bacteria.ps.norm.decont <- subset_samples(bacteria.ps.norm.decont, Site != "16S-MEC-01-1")
+> # Distribution de frequence du nombre de lectures sans les controles negatifs
+> hist(sample_sums(bacteria.ps.norm.decont), main = "Histogram: Read Counts",
++      xlab = "Total Reads", border = "black", col = "darkgreen", las=1, breaks = 10)
+> saveRDS(bacteria.ps.norm.decont, "ZamiaPhyllosphere_16S_decontam_com01.rds")
+> ################################################################################
+> ## Prevalence: number of samples in which a taxon appears at least once.
+> #
+> #
+> bacteria.ps.norm.decont
+pphyloseq-class experiment-level object
+otu_table()   OTU Table:         [ 15025 taxa and 117 samples ]
+sample_data() Sample Data:       [ 117 samples by 30 sample variables ]
+tax_table()   Taxonomy Table:    [ 15025 taxa by 7 taxonomic ranks ]
+refseq()      DNAStringSet:      [ 15025 reference sequences ]
+> # Compute prevalence of each feature, store as data.frame
+> prevdf.4 = apply(X = otu_table(bacteria.ps.norm.decont),
++                  MARGIN = ifelse(taxa_are_rows(bacteria.ps.norm.decont), yes = 1, no = 2),
++                  FUN = function(x){sum(x > 0)})
+> ##Add taxonomy and total read counts to this data.frame
+> prevdf.4 = data.frame(Prevalence = prevdf.4,
++                       TotalAbundance = taxa_sums(bacteria.ps.norm.decont),
++                       tax_table(bacteria.ps.norm.decont))
+> head(prevdf.4)
+Prevalence TotalAbundance  Kingdom           Phylum               Class               Order               Family
+ASV1        109          57913 Bacteria   Proteobacteria Alphaproteobacteria         Rhizobiales     Beijerinckiaceae
+ASV2        109          27247 Bacteria   Proteobacteria Alphaproteobacteria         Rhizobiales     Beijerinckiaceae
+ASV3        104          26492 Bacteria Actinobacteriota      Actinobacteria   Corynebacteriales     Mycobacteriaceae
+ASV4        113          23978 Bacteria   Proteobacteria Alphaproteobacteria     Caulobacterales     Caulobacteraceae
+ASV5        108          22575 Bacteria   Proteobacteria Alphaproteobacteria     Caulobacterales     Caulobacteraceae
+ASV6         70          22300 Bacteria Actinobacteriota     Thermoleophilia Solirubrobacterales Solirubrobacteraceae
+             Genus    Species
+ASV1  Methylocella       <NA>
+ASV2  Methylocella       <NA>
+ASV3 Mycobacterium paraterrae
+ASV4          <NA>       <NA>
+ASV5          <NA>       <NA>
+ASV6  Conexibacter       <NA>
+> plyr::ddply(prevdf.4, "Phylum", function(df1){cbind(mean(df1$Prevalence),
++                                                     sum(df1$Prevalence))})
+                                                  Phylum         1     2
+1              Abditibacteriota 1.2727273    14
+2               Acidobacteriota 3.4224236  3022
+3              Actinobacteriota 5.1451118 11736
+4                Armatimonadota 2.9340102   578
+5                  Bacteroidota 2.4455764  4561
+6              Bdellovibrionota 1.3221289   472
+7                   Chloroflexi 2.9713424  1970
+8                 Cyanobacteria 1.3500000    81
+9                  Deinococcota 3.4526316   328
+10                 Dependentiae 0.9629630    26
+11             Desulfobacterota 0.8518519    23
+12              Elusimicrobiota 0.9310345    27
+13                   Firmicutes 1.3515850   469
+14              Gemmatimonadota 1.7238095   181
+15                  Myxococcota 2.2307692  1131
+16              Patescibacteria 1.6915663   702
+17              Planctomycetota 1.0400000    52
+18               Proteobacteria 3.5629499 24253
+19                      RCP2-54 0.9166667    11
+20 SAR324 clade(Marine group B) 1.1428571    40
+21                Spirochaetota 0.8750000    14
+22            Verrucomicrobiota 1.4253394   315
+23                        WPS-2 1.2666667    19
+
+> ## Subset to remaining phyla
+> prevdf.4.1 = subset(prevdf.4, Phylum %in% get_taxa_unique(bacteria.ps.norm.decont, "Phylum"))
+> head(prevdf.4.1)
+     Prevalence TotalAbundance  Kingdom           Phylum               Class               Order               Family
+ASV1        109          57913 Bacteria   Proteobacteria Alphaproteobacteria         Rhizobiales     Beijerinckiaceae
+ASV2        109          27247 Bacteria   Proteobacteria Alphaproteobacteria         Rhizobiales     Beijerinckiaceae
+ASV3        104          26492 Bacteria Actinobacteriota      Actinobacteria   Corynebacteriales     Mycobacteriaceae
+ASV4        113          23978 Bacteria   Proteobacteria Alphaproteobacteria     Caulobacterales     Caulobacteraceae
+ASV5        108          22575 Bacteria   Proteobacteria Alphaproteobacteria     Caulobacterales     Caulobacteraceae
+ASV6         70          22300 Bacteria Actinobacteriota     Thermoleophilia Solirubrobacterales Solirubrobacteraceae
+             Genus    Species
+ASV1  Methylocella       <NA>
+ASV2  Methylocella       <NA>
+ASV3 Mycobacterium paraterrae
+ASV4          <NA>       <NA>
+ASV5          <NA>       <NA>
+ASV6  Conexibacter       <NA>
+> ggplot(prevdf.4.1, aes(TotalAbundance, Prevalence / nsamples(bacteria.ps.norm.decont), color=Phylum)) +
++   # Include a guess for parameter
++   geom_hline(yintercept = 0.020, alpha = 0.5, linetype = 2) + geom_point(size = 2, alpha = 0.7) +
++   scale_x_log10() + xlab("Total Abundance") + ylab("Prevalence [Frac. Samples]") +
++   facet_wrap(~Phylum) +
++   theme_classic() +
++   theme(legend.position = "none")
+Warning message:
+In scale_x_log10() :
+  log-10 transformation introduced infinite values.
+> ## filter out phylum with prevalence = 1.00000
+> #Define prevalence threshold to remove OTU present in only one sample
+> prevalenceThreshold = 0.018 * nsamples(bacteria.ps.norm.decont)
+> prevalenceThreshold
+[1] 2.106
+> #Execute prevalence filter, using prune_taxa() function
+> keepTaxa = rownames(prevdf.4.1)[(prevdf.4.1$Prevalence >= prevalenceThreshold)]
+> bacteria.ps.dataset.prev = prune_taxa(keepTaxa, bacteria.ps.norm.decont)
+> bacteria.ps.dataset.prev
+phyloseq-class experiment-level object
+otu_table()   OTU Table:         [ 3078 taxa and 117 samples ]
+sample_data() Sample Data:       [ 117 samples by 30 sample variables ]
+tax_table()   Taxonomy Table:    [ 3078 taxa by 7 taxonomic ranks ]
+refseq()      DNAStringSet:      [ 3078 reference sequences ]
+> table(tax_table(bacteria.ps.dataset.prev)[, "Phylum"], exclude = NULL)
+
+            Abditibacteriota              Acidobacteriota             Actinobacteriota               Armatimonadota 
+                           1                          218                          589                           32 
+                Bacteroidota             Bdellovibrionota                  Chloroflexi                Cyanobacteria 
+                         322                           30                          171                            5 
+                Deinococcota                   Firmicutes              Gemmatimonadota                  Myxococcota 
+                          25                           17                           13                           74 
+             Patescibacteria              Planctomycetota               Proteobacteria SAR324 clade(Marine group B) 
+                          54                            1                         1509                            2 
+           Verrucomicrobiota                        WPS-2 
+                          14                            1 
+> table(tax_table(bacteria.ps.dataset.prev)[, "Order"], exclude = NULL)
+
+                          37-13                              67-14                              A0839 
+                                 2                                 14                                  2 
+                              A21b                                AB1                 Abditibacteriaceae 
+                                 5                                  4                                  1 
+                  Acetobacteraceae     Acidobacteriaceae (Subgroup 1)                    Acidothermaceae 
+                               281                                139                                 42 
+                           AKIW781                            AKYH767                     Alcaligenaceae 
+                                 4                                  1                                  2 
+                            B1-7BS                        Bacillaceae                 Bdellovibrionaceae 
+                                 1                                  2                                  6 
+                  Beijerinckiaceae                            BIrii41                  Blastocatellaceae 
+                               486                                  3                                  3 
+                Blattabacteriaceae                  Brevibacteriaceae                    Bryobacteraceae 
+                                 4                                  1                                 19 
+                  Burkholderiaceae                   Caedibacteraceae             Candidatus Jidaibacter 
+                                26                                 15                                 11 
+                  Caulobacteraceae                  Cellulomonadaceae                 Chitinibacteraceae 
+                                69                                  1                                  1 
+                 Chitinimonadaceae                   Chitinophagaceae                    Chloroflexaceae 
+                                 1                                 69                                 44 
+                Chromobacteriaceae                Chthoniobacteraceae                     Comamonadaceae 
+                                 1                                  2                                 32 
+                Corynebacteriaceae                Cryptosporangiaceae                  Cyclobacteriaceae 
+                                 4                                  2                                  1 
+                     Cytophagaceae                  Defluviicoccaceae                     Deinococcaceae 
+                                 3                                  2                                 24 
+                       Devosiaceae                Diplorickettsiaceae                        Elsteraceae 
+                                 4                                  2                                  1 
+                Enterobacteriaceae                         env.OPS 17                        Erwiniaceae 
+                                 8                                  2                                  5 
+                       Ferrovaceae                  Fimbriimonadaceae                  Flavobacteriaceae 
+                                 1                                 20                                  1 
+                       Fokiniaceae                        Frankiaceae                    Geminicoccaceae 
+                                 2                                 76                                  3 
+                 Gemmatimonadaceae                Geodermatophilaceae                      Haliangiaceae 
+                                13                                  4                                 22 
+                     Holophagaceae                  Hymenobacteraceae                  Hyphomicrobiaceae 
+                                 1                                 15                                  6 
+                   Hyphomonadaceae                          Iamiaceae                 Ilumatobacteraceae 
+                                 1                                  6                                  8 
+                     Inquilinaceae                 Intrasporangiaceae                        JG30-KF-AS9 
+                                 3                                  6                                  2 
+                      JG30-KF-CM45                             KD3-93                    Kineosporiaceae 
+                                 4                                  2                                 26 
+                Ktedonobacteraceae                          Labraceae                   Lactobacillaceae 
+                                 4                                  3                                  2 
+                              LWQ8                 Methyloligellaceae                    Methylopilaceae 
+                                 6                                  1                                  1 
+                  Micavibrionaceae                  Microbacteriaceae                     Micrococcaceae 
+                                 4                                 32                                  3 
+                Micromonosporaceae                     Micropepsaceae                    Microscillaceae 
+                                32                                 21                                  7 
+                     Moraxellaceae                     Morganellaceae                   Mycobacteriaceae 
+                                11                                  2                                 25 
+                     Myxococcaceae                    Nakamurellaceae                      Neisseriaceae 
+                                23                                  5                                  2 
+                 Nitrosomonadaceae                    Nocardioidaceae                        Nostocaceae 
+                                 5                                 72                                  1 
+                    Oligoflexaceae                   Oxalobacteraceae                   Paenibacillaceae 
+                                 8                                 21                                  4 
+              Paracaedibacteraceae                  Parachlamydiaceae                    Pedosphaeraceae 
+                                 6                                  4                                  6 
+                Phaselicystidaceae                      Polyangiaceae                  Procabacteriaceae 
+                                 4                                 16                                  1 
+              Propionibacteriaceae                   Pseudomonadaceae                 Pseudonocardiaceae 
+                                 7                                  6                                 96 
+                    Reyranellaceae                       Rhizobiaceae         Rhizobiales Incertae Sedis 
+                                 5                                 17                                  5 
+                Rhodanobacteraceae                   Rhodobacteraceae                     Rhodocyclaceae 
+                                15                                  2                                  4 
+                 Rhodomicrobiaceae                     Rickettsiaceae                     Roseiflexaceae 
+                                 2                                 11                                 49 
+                Saccharimonadaceae           Salisediminibacteriaceae                    Sandaracinaceae 
+                                11                                  2                                  1 
+                           SC-I-84                  Silvanigrellaceae                       Simkaniaceae 
+                                 1                                  1                                  1 
+                            SM2D12                    Solibacteraceae                     Solimonadaceae 
+                                16                                 26                                  7 
+              Solirubrobacteraceae                Sphingobacteriaceae                  Sphingomonadaceae 
+                                49                                 45                                194 
+                     Spirosomaceae                    Sporichthyaceae                  Staphylococcaceae 
+                               160                                  2                                  5 
+                  Streptococcaceae                  Streptomycetaceae Streptosporangiales Incertae Sedis 
+                                 2                                  8                                  2 
+                    Sutterellaceae             Thermoanaerobaculaceae                Thermomonosporaceae 
+                                 2                                  1                                  3 
+                           TRA3-20                       Trueperaceae                   Tsukamurellaceae 
+                                 1                                  1                                  1 
+                    Unknown Family                      Weeksellaceae                  Xanthobacteraceae 
+                                17                                  8                                 36 
+                  Xanthomonadaceae                       Yersiniaceae                   YM_S32_TM7_50_20 
+                                 7                                  1                                  3 
+                              <NA> 
+                               339 
+> ntaxa(bacteria.ps.norm.decont)-ntaxa(bacteria.ps.dataset.prev)
+[1] 11947
+> #prune OTUs that are not present in at least one sample
+> ps.prev.exclude = prune_taxa(taxa_sums(bacteria.ps.dataset.prev) > 0, bacteria.ps.dataset.prev)
+> ntaxa(ps.prev.exclude)
+[1] 3078
+> ##All taxa are present in at least one sample
+> #Save the new dataset in a clean phyloseq object and in dataframe
+> bacteria.ps.dataset = bacteria.ps.dataset.prev
+> bacteria.df.dataset = phyloseq_to_df(bacteria.ps.dataset.prev, addtax = T, addtot = T, addmaxrank = T, sorting = "abundance")
+Error in phyloseq_to_df(bacteria.ps.dataset.prev, addtax = T, addtot = T,  : 
+  Error: Sample names in 'physeq' could not be automatically converted to the syntactically valid column names in data.frame (see 'make.names'). Consider renaming with 'sample_names'.
+> View(bacteria.ps.dataset.prev)
+> View(Sample_list)
+> sample_names(bacteria.ps.dataset.prev) <- gsub(pattern = "-", replacement = "_", x = sample_names(bacteria.ps.dataset.prev))
+> ##rename samples back
+> sample_names(bacteria.ps.dataset.prev) <- paste0("z_", sample_names(bacteria.ps.dataset.prev))
+> psd <- phyloseq_to_df(bacteria.ps.dataset.prev)
+
+> saveRDS(bacteria.ps.dataset, "bacteria_ps_dataset_March07_16S.rds")
+> ###Read process Phyloseq object for following analysis
+> bacteria.ps.dataset = readRDS("bacteria_ps_dataset_March07_16S.rds")
+> refseq(bacteria.ps.dataset)
+DNAStringSet object of length 3078:
+       width seq                                                                                      names               
+   [1]   303 GTAGTCCACGCCGTAAACGATGGATGCTAGCCGTTGGTCAGCT...GCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG ASV1
+   [2]   303 GTAGTCCACGCCCTAAACGATGGATGCTAGCCGTTAGGCAGCT...GCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG ASV2
+   [3]   300 GTAGTCCACGCCGTAAACGGTGGGTACTAGGTGTGGGTTTCCT...GCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG ASV3
+   [4]   299 GTAGTCCACGCTGTAAACGATGAGAGCTAGTTGTCGGCACGCA...GCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG ASV4
+   [5]   299 GTAGTCCACGCTGTAAACGATGAGTGCTAGTTGTCGGCGGGCA...GCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG ASV5
+   ...   ... ...
+[3074]   300 GTAGTCCACGCTGTAAACTATGAGTGCTAGGCGTTGCGGGTAT...GCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG ASV7872
+[3075]   302 GTAGTCCACGCCTTAAACGATGGATGCTAGCCGTCGGGCAGCT...GCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCG ASV8001
+[3076]   301 GTAGTCCGCACCGTAAACGATGGATACTAGGCGTTCGGAGAGT...GCTGTCGTCAGCTCGTGTTGTGAAATGTTCGGTTAAGTCCGG ASV8128
+[3077]   275 GTAGTCCACGCCCTAAACGATGAGAACTAGACATTGCATTTTA...GCCGTCGTAAGCTCGTGTCGTAAGATGTTGGGTTAAGTCCCG ASV8688
+[3078]   306 GTAGTCCACGCCGTAAACGATGAGCACTAGGTGGATGCCGAGC...GCTGTCGTCAGCTCGTGCCGTGAGGTGTTAGGTTAAGTCCTT ASV8854
+
+
+#### DESEQ2 ####
+> bacteria.ps.norm.decont
+phyloseq-class experiment-level object
+otu_table()   OTU Table:         [ 15025 taxa and 117 samples ]
+sample_data() Sample Data:       [ 117 samples by 30 sample variables ]
+tax_table()   Taxonomy Table:    [ 15025 taxa by 7 taxonomic ranks ]
+refseq()      DNAStringSet:      [ 15025 reference sequences ]
+
+
